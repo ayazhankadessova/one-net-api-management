@@ -4,7 +4,7 @@ import React, { useState } from 'react'
 import { AlertCircle, ChevronDown, ChevronUp } from 'lucide-react'
 import { Alert, AlertDescription } from '@/components/ui/alert'
 import { endpoints } from '@/config/apiEndpoints'
-import { FormData, ApiResponse } from '@/types/apiEndpoint'
+import { FormData, ApiResponse, ApiEndpoint, UpdateEquipmentData } from '@/types/apiEndpoint'
 
 
 const ApiTester: React.FC = () => {

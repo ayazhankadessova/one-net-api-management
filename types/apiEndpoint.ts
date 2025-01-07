@@ -18,7 +18,7 @@ interface BaseEquipmentData {
   other: Other
 }
 
-interface UpdateEquipmentData extends BaseEquipmentData {
+export interface UpdateEquipmentData extends BaseEquipmentData {
   device_id: string
 }
 
