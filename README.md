@@ -1,4 +1,4 @@
-## One net API Swagger
+## One net API Manager
 
 ## 1. New Equipment
 
@@ -117,3 +117,68 @@
 "error": "succ"
 }
 ```
+
+
+## 3. Query data flow information in batches
+
+- `GET` http://api.onenet.hk.chinamobile.com/devices/device_id/datastreams
+
+* device_id: needs to be replaced with device ID
+
+- URL request parameters
+
+| Parameter name | Format | Is it necessary | Description |
+| -------------- | ------ | ---------------- | ----------- |
+| datastream_ids | string | no | data stream ID, separate multiple IDs with commas. By default, all data streams are queried. |
+
+- HTTP request parameters
+
+| Parameter name | Format | Is it necessary | Description |
+| -------------- | ------ | ---------------- | ----------- |
+| api-key | string | yes | must be masterkey or an apikey with access rights to the device |
+
+- Return parameters
+
+| Parameter name | Format | Is it necessary | Description |
+| -------------- | ------ | ---------------- | ----------- |
+| errno | int | call error code, 0 means the call is successful |
+| error | string | error description, "succ" means the call is successful |
+| data | array-json | data stream information, see the data description table |
+
+- Data
+
+| Parameter name | Format |  Description |
+| -------------- | ------ |----------- |
+| id | string | data stream ID |
+| create_time | string | data flow creation time |
+| update_at | string | latest data upload time |
+| current_value | string/int/json... | latest data point |
+
+
+- Request example
+
+- `GET` http://api.onenet.hk.chinamobile.com/devices/20474930/datastreams?datastream_ids=aaa,bbb HTTP/1
+
+- Return example
+
+{
+ "errno": 0,
+ "data": [{
+ "update_at": "2017-11-20 10:03:10",
+ "id": "aaa",
+ "create_time": "2017-11-20 09:59:35",
+ "current_value": {
+ "Header": {
+ "CipherType": 1,
+ "DevType": 1
+ },
+ "Body": 3
+ }
+ }, {
+ "update_at": "2017-12-22 10:30:22",
+ "id": "bbb",
+ "create_time": "2017-12-22 10:12:36",
+ "current_value": 1
+ }],
+ "error": "succ"
+}
