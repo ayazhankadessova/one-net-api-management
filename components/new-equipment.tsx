@@ -9,12 +9,10 @@ import { Switch } from '@/components/ui/switch'
 import { Separator } from '@/components/ui/separator'
 import { AlertCircle } from 'lucide-react'
 import { FieldLabel } from '@/components/field-label'
+import { validateCoordinates } from '@/lib/utils'
 
-import { NewEquipmentResponse, NewEquipmentRequest} from '@/types/newEquipment'
-import {
-  Location,
-} from '@/types/common'
-
+import { NewEquipmentResponse, NewEquipmentRequest } from '@/types/newEquipment'
+import { Location } from '@/types/common'
 
 const initialFormData: NewEquipmentRequest = {
   title: '',
@@ -37,19 +35,43 @@ export function NewEquipmentForm({ apiKey }: Props) {
   const [loading, setLoading] = useState(false)
   const [response, setResponse] = useState<NewEquipmentResponse | null>(null)
   const [formData, setFormData] = useState<NewEquipmentRequest>(initialFormData)
+  const [locationErrors, setLocationErrors] = useState({
+    lon: '',
+    lat: '',
+  })
 
   const handleLocationChange = (field: keyof Location, value: string) => {
+    const numValue = value ? parseFloat(value) : null
+    const error = validateCoordinates(field, numValue)
+
+    setLocationErrors((prev) => ({
+      ...prev,
+      [field]: error,
+    }))
+
     setFormData((prev) => ({
       ...prev,
       location: {
         ...(prev.location || { lon: null, lat: null }),
-        [field]: value ? parseFloat(value) : null,
+        [field]: numValue,
       },
     }))
   }
 
+  const isFormValid = () => {
+    return (
+      !!formData.title &&
+      !locationErrors.lat &&
+      !locationErrors.lon &&
+      (!formData.location?.lat ||
+        (formData.location.lat >= -90 && formData.location.lat <= 90)) &&
+      (!formData.location?.lon ||
+        (formData.location.lon >= -180 && formData.location.lon <= 180))
+    )
+  }
+
   const handleSubmit = async () => {
-    if (!formData.title) {
+    if (!isFormValid()) {
       return
     }
 
@@ -63,8 +85,9 @@ export function NewEquipmentForm({ apiKey }: Props) {
         : {}),
       ...(formData.private !== undefined && { private: formData.private }),
       ...(formData.auth_info && { auth_info: formData.auth_info }),
-      ...(formData.other ? { other: formData.other }
-        : {}),
+      ...(Object.keys(formData.other || {}).length > 0 && {
+        other: formData.other,
+      }),
     }
 
     setLoading(true)
@@ -165,7 +188,7 @@ export function NewEquipmentForm({ apiKey }: Props) {
               <div className='space-y-2'>
                 <FieldLabel
                   label='Longitude'
-                  description='Geographic longitude coordinate'
+                  description='Geographic longitude coordinate (-180 to 180)'
                 />
                 <Input
                   type='number'
@@ -173,12 +196,16 @@ export function NewEquipmentForm({ apiKey }: Props) {
                   onChange={(e) => handleLocationChange('lon', e.target.value)}
                   step='any'
                   placeholder='e.g. 109'
+                  className={locationErrors.lon ? 'border-red-500' : ''}
                 />
+                {locationErrors.lon && (
+                  <p className='text-sm text-red-500'>{locationErrors.lon}</p>
+                )}
               </div>
               <div className='space-y-2'>
                 <FieldLabel
                   label='Latitude'
-                  description='Geographic latitude coordinate'
+                  description='Geographic latitude coordinate (-90 to 90)'
                 />
                 <Input
                   type='number'
@@ -186,7 +213,11 @@ export function NewEquipmentForm({ apiKey }: Props) {
                   onChange={(e) => handleLocationChange('lat', e.target.value)}
                   step='any'
                   placeholder='e.g. 23.54'
+                  className={locationErrors.lat ? 'border-red-500' : ''}
                 />
+                {locationErrors.lat && (
+                  <p className='text-sm text-red-500'>{locationErrors.lat}</p>
+                )}
               </div>
             </div>
           </div>
@@ -310,7 +341,7 @@ export function NewEquipmentForm({ apiKey }: Props) {
           <Button
             className='w-full'
             onClick={handleSubmit}
-            disabled={loading || !formData.title || !apiKey}
+            disabled={loading || !isFormValid() || !apiKey}
           >
             {loading ? 'Creating Equipment...' : 'Create Equipment'}
           </Button>
