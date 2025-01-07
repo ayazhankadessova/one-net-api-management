@@ -75,7 +75,6 @@ export function NewEquipmentForm({ apiKey }: Props) {
       return
     }
 
-    // Remove empty optional fields before sending
     const requestData = {
       title: formData.title,
       ...(formData.desc && { desc: formData.desc }),
@@ -92,17 +91,14 @@ export function NewEquipmentForm({ apiKey }: Props) {
 
     setLoading(true)
     try {
-      const response = await fetch(
-        'http://api.onenet.hk.chinamobile.com/devices',
-        {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'api-key': apiKey,
-          },
-          body: JSON.stringify(requestData),
-        }
-      )
+      const response = await fetch('/api/equipment', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'api-key': apiKey,
+        },
+        body: JSON.stringify(requestData),
+      })
       const data = await response.json()
       setResponse(data)
     } catch (error) {
