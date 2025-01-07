@@ -41,20 +41,34 @@ export function QueryDatastreamsForm({ apiKey }: Props) {
       return
     }
 
+    // Remove empty optional fields before sending
+    const requestData = {
+      ...(formData.title && { title: formData.title }),
+      ...(formData.desc && { desc: formData.desc }),
+      ...(formData.tags?.length && { tags: formData.tags }),
+      ...(formData.location?.lon || formData.location?.lat
+        ? { location: formData.location }
+        : {}),
+      ...(formData.private !== undefined && { private: formData.private }),
+      ...(formData.auth_info && { auth_info: formData.auth_info }),
+      ...(Object.keys(formData.other || {}).length > 0 && {
+        other: formData.other,
+      }),
+    }
+
     setLoading(true)
     try {
-      // Construct URL with optional query parameter
-      let url = `http://api.onenet.hk.chinamobile.com/devices/${formData.device_id}/datastreams`
-      if (formData.datastream_ids) {
-        url += `?datastream_ids=${formData.datastream_ids}`
-      }
-
-      const response = await fetch(url, {
-        method: 'GET',
-        headers: {
-          'api-key': apiKey,
-        },
-      })
+      const response = await fetch(
+        `http://api.onenet.hk.chinamobile.com/devices/${formData.device_id}`,
+        {
+          method: 'PUT',
+          headers: {
+            'Content-Type': 'application/json',
+            'api-key': apiKey,
+          },
+          body: JSON.stringify(requestData),
+        }
+      )
       const data = await response.json()
       setResponse(data)
     } catch (error) {
