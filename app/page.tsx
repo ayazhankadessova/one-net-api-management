@@ -9,13 +9,13 @@ import { Label } from '@/components/ui/label'
 import { Alert, AlertDescription } from '@/components/ui/alert'
 import { AlertCircle } from 'lucide-react'
 import { NewEquipmentForm } from '@/components/new-equipment'
-// import { UpdateEquipmentForm } from '@/components/update-equipment-form'
+import { UpdateEquipmentForm } from '@/components/update-equipment-form'
 
 export default function Home() {
   const [apiKey, setApiKey] = useState('')
 
   return (
-    <div className='container mx-auto py-10 space-y-6'>
+    <div className='container mx-auto p-20 space-y-6'>
       <Card>
         <CardHeader>
           <CardTitle>OneNET Equipment Management</CardTitle>
@@ -52,7 +52,7 @@ export default function Home() {
           <NewEquipmentForm apiKey={apiKey} />
         </TabsContent>
         <TabsContent value='update' className='mt-6'>
-          {/* <UpdateEquipmentForm apiKey={apiKey} /> */}
+          <UpdateEquipmentForm apiKey={apiKey} />
         </TabsContent>
       </Tabs>
     </div>

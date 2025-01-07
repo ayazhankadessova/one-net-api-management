@@ -8,6 +8,9 @@ body {
 
 @layer base {
   :root {
+    --background-start: 160 55% 90%; /* white */
+    --background-end: 160 55% 90%; /* teal-200 */
+    --background-mid: 160 55% 95%; /* white */
     --background: 0 0% 100%;
     --foreground: 0 0% 3.9%;
     --card: 0 0% 100%;
@@ -67,6 +70,6 @@ body {
     @apply border-border;
   }
   body {
-    @apply bg-background text-foreground;
+    @apply bg-gradient-to-r from-[hsl(var(--background-start))] via-[hsl(var(--background-mid))] to-[hsl(var(--background-end))] text-foreground;
   }
 }
