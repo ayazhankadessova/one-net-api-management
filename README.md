@@ -1,5 +1,7 @@
 ## One net API Manager
 
+This is a simple frontend for making API calls to [OneNet](https://onenet.hk.chinamobile.com/subhk/doc/multiprotocol/book/develop/http/api/3.更新设备信息.html) for Creating Equipment, Updating Equipment & Querying Data Streams. Supports big screens only currently.
+
 ## 1. New Equipment
 
 - `POST` http://api.onenet.hk.chinamobile.com/devices
