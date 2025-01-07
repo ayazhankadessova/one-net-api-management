@@ -10,6 +10,7 @@ import { Alert, AlertDescription } from '@/components/ui/alert'
 import { AlertCircle } from 'lucide-react'
 import { NewEquipmentForm } from '@/components/new-equipment'
 import { UpdateEquipmentForm } from '@/components/update-equipment-form'
+import { QueryDatastreamsForm } from '@/components/query-datastreams'
 
 export default function Home() {
   const [apiKey, setApiKey] = useState('')
@@ -44,15 +45,19 @@ export default function Home() {
       )}
 
       <Tabs defaultValue='new' className='space-y-4'>
-        <TabsList className='grid w-full grid-cols-2'>
+        <TabsList className='grid w-full grid-cols-3'>
           <TabsTrigger value='new'>New Equipment</TabsTrigger>
           <TabsTrigger value='update'>Update Equipment</TabsTrigger>
+          <TabsTrigger value='query'>Query DataStreams</TabsTrigger>
         </TabsList>
         <TabsContent value='new' className='mt-6'>
           <NewEquipmentForm apiKey={apiKey} />
         </TabsContent>
         <TabsContent value='update' className='mt-6'>
           <UpdateEquipmentForm apiKey={apiKey} />
+        </TabsContent>
+        <TabsContent value='query' className='mt-6'>
+          <QueryDatastreamsForm apiKey={apiKey} />
         </TabsContent>
       </Tabs>
     </div>
