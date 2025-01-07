@@ -3,10 +3,7 @@ export interface Location {
   lat: number | null
 }
 
-export interface Other {
-  version: string
-  manufacturer: string
-}
+export type Other = Record<string, string>;
 
 export interface ApiResponse {
   errno: number

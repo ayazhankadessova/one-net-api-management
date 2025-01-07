@@ -26,10 +26,7 @@ const initialFormData: NewEquipmentRequest = {
   },
   private: true,
   auth_info: '',
-  other: {
-    version: '',
-    manufacturer: '',
-  },
+  other: {},
 }
 
 interface Props {
@@ -66,8 +63,7 @@ export function NewEquipmentForm({ apiKey }: Props) {
         : {}),
       ...(formData.private !== undefined && { private: formData.private }),
       ...(formData.auth_info && { auth_info: formData.auth_info }),
-      ...(formData.other?.version || formData.other?.manufacturer
-        ? { other: formData.other }
+      ...(formData.other ? { other: formData.other }
         : {}),
     }
 
@@ -200,7 +196,6 @@ export function NewEquipmentForm({ apiKey }: Props) {
           {/* Additional Settings */}
           <div className='space-y-4'>
             <h3 className='font-medium'>Additional Settings</h3>
-
             {/* Privacy Setting */}
             <div className='flex items-center justify-between rounded-lg border p-4'>
               <div className='space-y-0.5'>
@@ -216,7 +211,6 @@ export function NewEquipmentForm({ apiKey }: Props) {
                 }
               />
             </div>
-
             {/* Auth Info */}
             <div className='space-y-2'>
               <FieldLabel
@@ -234,42 +228,82 @@ export function NewEquipmentForm({ apiKey }: Props) {
                 placeholder='Enter authentication info'
               />
             </div>
-
             {/* Other Information */}
-            {/* <div className='grid grid-cols-2 gap-4'>
+            <div className='space-y-4'>
+              <h3 className='font-medium'>Custom Information</h3>
               <div className='space-y-2'>
                 <FieldLabel
-                  label='Version'
-                  description='Device version number'
+                  label='Custom Fields'
+                  description='Add custom key-value pairs'
                 />
-                <Input
-                  value={formData.other?.version}
-                  onChange={(e) =>
-                    setFormData((prev) => ({
-                      ...prev,
-                      other: { ...prev.other, version: e.target.value },
-                    }))
-                  }
-                  placeholder='e.g. 1.0.0'
-                />
+                <div className='space-y-2'>
+                  {/* Add new field button */}
+                  <Button
+                    type='button'
+                    variant='outline'
+                    onClick={() => {
+                      setFormData((prev) => ({
+                        ...prev,
+                        other: {
+                          ...prev.other,
+                          '': '', // Add new empty field
+                        },
+                      }))
+                    }}
+                  >
+                    Add Custom Field
+                  </Button>
+
+                  {/* Dynamic fields */}
+                  {Object.entries(formData.other || {}).map(
+                    ([key, value], index) => (
+                      <div key={index} className='flex gap-2'>
+                        <Input
+                          placeholder='Key'
+                          value={key}
+                          onChange={(e) => {
+                            const newOther = { ...formData.other }
+                            const oldKey = key
+                            delete newOther[oldKey]
+                            newOther[e.target.value] = value
+                            setFormData((prev) => ({
+                              ...prev,
+                              other: newOther,
+                            }))
+                          }}
+                        />
+                        <Input
+                          placeholder='Value'
+                          value={value}
+                          onChange={(e) => {
+                            setFormData((prev) => ({
+                              ...prev,
+                              other: {
+                                ...prev.other,
+                                [key]: e.target.value,
+                              },
+                            }))
+                          }}
+                        />
+                        <Button
+                          variant='destructive'
+                          onClick={() => {
+                            const newOther = { ...formData.other }
+                            delete newOther[key]
+                            setFormData((prev) => ({
+                              ...prev,
+                              other: newOther,
+                            }))
+                          }}
+                        >
+                          Remove
+                        </Button>
+                      </div>
+                    )
+                  )}
+                </div>
               </div>
-              <div className='space-y-2'>
-                <FieldLabel
-                  label='Manufacturer'
-                  description='Device manufacturer name'
-                />
-                <Input
-                  value={formData.other.manufacturer}
-                  onChange={(e) =>
-                    setFormData((prev) => ({
-                      ...prev,
-                      other: { ...prev.other, manufacturer: e.target.value },
-                    }))
-                  }
-                  placeholder='e.g. China Mobile'
-                />
-              </div>
-            </div> */}
+            </div>
           </div>
 
           {/* Submit Button */}
