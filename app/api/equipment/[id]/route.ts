@@ -4,10 +4,10 @@ import { BASE_URL } from '@/config/apiEndpoints'
 
 export async function PUT(
   request: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const device_id = params.id
+    const { id: device_id } = await params
     const apiKey = request.headers.get('api-key')
     const updateData = await request.json()
 
@@ -69,4 +69,5 @@ export async function PUT(
     )
   }
 }
+
 
