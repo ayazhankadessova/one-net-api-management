@@ -61,7 +61,7 @@ export function NewEquipmentForm({ apiKey }: Props) {
       title: formData.title,
       ...(formData.desc && { desc: formData.desc }),
       ...(formData.tags?.length && { tags: formData.tags }),
-      ...(formData.location?.lon || formData.location?.lat
+      ...(formData.location?.lon && formData.location?.lat
         ? { location: formData.location }
         : {}),
       ...(formData.private !== undefined && { private: formData.private }),
@@ -187,7 +187,7 @@ export function NewEquipmentForm({ apiKey }: Props) {
                 <Input
                   type='number'
                   value={formData.location?.lat ?? ''}
-                  onChange={(e) => handleLocationChange('lon', e.target.value)}
+                  onChange={(e) => handleLocationChange('lat', e.target.value)}
                   step='any'
                   placeholder='e.g. 23.54'
                 />
