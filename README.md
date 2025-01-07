@@ -34,6 +34,7 @@
 
 - Example Body
 
+```
 {
  "title": "test_device",
  "desc": "test_desc",
@@ -48,9 +49,11 @@
  "manufacturer": "china mobile"
  }
 }
+```
 
 - Return example
 
+```
 {
  "errno": 0,
  "data": {
@@ -58,6 +61,7 @@
  },
  "error": "succ"
 }
+```
 
 ## 2. Update Equipment Information
 
@@ -88,6 +92,7 @@
 
 - Example Body
 
+```
 {
 "title": "test_device",
 "desc": "test_desc",
@@ -102,11 +107,13 @@
 "manufacturer": "china mobile"
 }
 }
-
+```
 
 - Return to the example
 
+```
 {
 "errno": 0,
 "error": "succ"
 }
+```
