@@ -3,99 +3,15 @@
 import React, { useState } from 'react'
 import { AlertCircle, ChevronDown, ChevronUp } from 'lucide-react'
 import { Alert, AlertDescription } from '@/components/ui/alert'
+import { endpoints } from '@/config/apiEndpoints'
+import { FormData, ApiResponse } from '@/types/apiEndpoint'
 
-interface Location {
-  lon: number | null
-  lat: number | null
-}
-
-interface Other {
-  version: string
-  manufacturer: string
-}
-
-interface BaseEquipmentData {
-  title: string
-  desc: string
-  tags: string[]
-  location: Location
-  auth_info: string
-  other: Other
-}
-
-interface UpdateEquipmentData extends BaseEquipmentData {
-  device_id: string
-}
-
-interface ApiEndpoint {
-  id: 'new-equipment' | 'update-equipment'
-  name: string
-  method: 'POST' | 'PUT'
-  url: string
-  defaultBody: BaseEquipmentData
-}
-
-interface FormData {
-  'new-equipment': BaseEquipmentData
-  'update-equipment': UpdateEquipmentData
-}
-
-interface ApiResponse {
-  errno?: number
-  error?: string
-  data?: {
-    device_id?: string
-  }
-}
 
 const ApiTester: React.FC = () => {
   const [activeEndpoint, setActiveEndpoint] = useState<string | null>(null)
   const [response, setResponse] = useState<ApiResponse | null>(null)
   const [loading, setLoading] = useState<boolean>(false)
   const [apiKey, setApiKey] = useState<string>('')
-
-  const endpoints: ApiEndpoint[] = [
-    {
-      id: 'new-equipment',
-      name: 'New Equipment',
-      method: 'POST',
-      url: 'http://api.onenet.hk.chinamobile.com/devices',
-      defaultBody: {
-        title: '',
-        desc: '',
-        tags: [],
-        location: {
-          lon: null,
-          lat: null,
-        },
-        auth_info: '',
-        other: {
-          version: '',
-          manufacturer: '',
-        },
-      },
-    },
-    {
-      id: 'update-equipment',
-      name: 'Update Equipment',
-      method: 'PUT',
-      url: 'http://api.onenet.hk.chinamobile.com/devices/',
-      defaultBody: {
-        title: '',
-        desc: '',
-        tags: [],
-        location: {
-          lon: null,
-          lat: null,
-        },
-        auth_info: '',
-        other: {
-          version: '',
-          manufacturer: '',
-        },
-      },
-    },
-  ]
 
   const [formData, setFormData] = useState<FormData>({
     'new-equipment': { ...endpoints[0].defaultBody },
