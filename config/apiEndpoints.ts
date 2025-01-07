@@ -1,4 +1,8 @@
+// config/apiEndpoints.ts
+
 import { ApiEndpoint } from '@/types/apiEndpoint'
+
+export const BASE_URL = 'http://api.onenet.hk.chinamobile.com'
 
 export const endpoints: ApiEndpoint[] = [
   {

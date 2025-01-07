@@ -72,50 +72,46 @@ export function UpdateEquipmentForm({ apiKey }: Props) {
     )
   }
 
-  const handleSubmit = async () => {
+   const handleSubmit = async () => {
+     if (!isFormValid()) {
+       return
+     }
 
-    if (!isFormValid()) {
-        return
-    }
+     // Prepare request data without device_id since it's in the URL
+     const requestData = {
+       ...(formData.title && { title: formData.title }),
+       ...(formData.desc && { desc: formData.desc }),
+       ...(formData.tags?.length && { tags: formData.tags }),
+       ...(formData.location?.lon || formData.location?.lat
+         ? { location: formData.location }
+         : {}),
+       ...(formData.private !== undefined && { private: formData.private }),
+       ...(formData.auth_info && { auth_info: formData.auth_info }),
+       ...(Object.keys(formData.other || {}).length > 0 && {
+         other: formData.other,
+       }),
+     }
 
-    // Remove empty optional fields before sending
-    const requestData = {
-      ...(formData.title && { title: formData.title }),
-      ...(formData.desc && { desc: formData.desc }),
-      ...(formData.tags?.length && { tags: formData.tags }),
-      ...(formData.location?.lon || formData.location?.lat
-        ? { location: formData.location }
-        : {}),
-      ...(formData.private !== undefined && { private: formData.private }),
-      ...(formData.auth_info && { auth_info: formData.auth_info }),
-      ...(Object.keys(formData.other || {}).length > 0 && {
-        other: formData.other,
-      }),
-    }
-
-    setLoading(true)
-    try {
-      const response = await fetch(
-        `http://api.onenet.hk.chinamobile.com/devices/${formData.device_id}`,
-        {
-          method: 'PUT',
-          headers: {
-            'Content-Type': 'application/json',
-            'api-key': apiKey,
-          },
-          body: JSON.stringify(requestData),
-        }
-      )
-      const data = await response.json()
-      setResponse(data)
-    } catch (error) {
-      setResponse({
-        errno: -1,
-        error: error instanceof Error ? error.message : 'An error occurred',
-      })
-    }
-    setLoading(false)
-  }
+     setLoading(true)
+     try {
+       const response = await fetch(`/api/equipment/${formData.device_id}`, {
+         method: 'PUT',
+         headers: {
+           'Content-Type': 'application/json',
+           'api-key': apiKey,
+         },
+         body: JSON.stringify(requestData),
+       })
+       const data = await response.json()
+       setResponse(data)
+     } catch (error) {
+       setResponse({
+         errno: -1,
+         error: error instanceof Error ? error.message : 'An error occurred',
+       })
+     }
+     setLoading(false)
+   }
 
   return (
     <Card>
