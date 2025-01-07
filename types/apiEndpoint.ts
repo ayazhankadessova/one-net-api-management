@@ -1,6 +1,6 @@
 // types/apiEndpoint.ts
 
-interface Location {
+export interface Location {
   lon: number | null
   lat: number | null
 }
