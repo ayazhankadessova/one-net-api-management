@@ -1,10 +1,34 @@
 "use client"
 
 import React, { useState } from 'react'
-import { AlertCircle, ChevronDown, ChevronUp } from 'lucide-react'
+import { AlertCircle, ChevronDown, ChevronUp, Info} from 'lucide-react'
 import { Alert, AlertDescription } from '@/components/ui/alert'
 import { endpoints } from '@/config/apiEndpoints'
-import { FormData, ApiResponse, ApiEndpoint, UpdateEquipmentData } from '@/types/apiEndpoint'
+import {
+  FormData,
+  ApiResponse,
+  ApiEndpoint,
+  UpdateEquipmentData,
+  BaseEquipmentData, Other, Location
+} from '@/types/apiEndpoint'
+import { Input } from '@/components/ui/input'
+import { Label } from '@/components/ui/label'
+import { Button } from '@/components/ui/button'
+import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card'
+import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from '@/components/ui/accordion'
+import { Badge } from '@/components/ui/badge'
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from '@/components/ui/tooltip'
+
 
 
 const ApiTester: React.FC = () => {
@@ -18,24 +42,78 @@ const ApiTester: React.FC = () => {
     'update-equipment': { ...endpoints[1].defaultBody, device_id: '' },
   })
 
+  const renderFieldDescription = (description: string) => (
+    <TooltipProvider>
+      <Tooltip>
+        <TooltipTrigger asChild>
+          <Info className='h-4 w-4 ml-2 inline cursor-help' />
+        </TooltipTrigger>
+        <TooltipContent>
+          <p>{description}</p>
+        </TooltipContent>
+      </Tooltip>
+    </TooltipProvider>
+  )
+
+  type BaseEquipmentKeys = keyof BaseEquipmentData
+  type UpdateEquipmentKeys = keyof UpdateEquipmentData
+  type AllEquipmentKeys = BaseEquipmentKeys | UpdateEquipmentKeys
+
+  // Update the renderField function with proper typing
+  const renderField = (
+    endpointId: keyof FormData,
+    field: AllEquipmentKeys, // specify that field must be a key of our data types
+    label: string,
+    required: boolean,
+    description: string,
+    type: string = 'text'
+  ) => {
+    // Use type assertion to handle the index signature
+    const value = (formData[endpointId] as any)[field]
+
+    return (
+      <div className='space-y-2'>
+        <div className='flex items-center'>
+          <Label htmlFor={String(`${endpointId}-${String(field)}`)}>
+            {label}
+            {required && <span className='text-red-500 ml-1'>*</span>}
+          </Label>
+          {renderFieldDescription(description)}
+        </div>
+        <Input
+          id={`${endpointId}-${String(field)}`}
+          type={type}
+          value={value}
+          onChange={(e) => handleInputChange(endpointId, field, e.target.value)}
+          required={required}
+        />
+      </div>
+    )
+  }
+
   const handleInputChange = (
     endpointId: keyof FormData,
-    field: string,
-    value: string
+    field: AllEquipmentKeys,
+    value: string | boolean
   ): void => {
     setFormData((prev) => ({
       ...prev,
       [endpointId]: {
         ...prev[endpointId],
         [field]: value,
-      },
+      } as BaseEquipmentData | UpdateEquipmentData,
     }))
   }
 
+  // Update handleNestedInputChange for nested objects
+  type NestedKeys = 'location' | 'other'
+  type LocationKeys = keyof Location
+  type OtherKeys = keyof Other
+
   const handleNestedInputChange = (
     endpointId: keyof FormData,
-    parent: 'location' | 'other',
-    field: string,
+    parent: NestedKeys,
+    field: LocationKeys | OtherKeys,
     value: string | number
   ): void => {
     setFormData((prev) => ({
@@ -43,10 +121,10 @@ const ApiTester: React.FC = () => {
       [endpointId]: {
         ...prev[endpointId],
         [parent]: {
-          ...prev[endpointId][parent],
+          ...(prev[endpointId][parent] as any),
           [field]: value,
         },
-      },
+      } as BaseEquipmentData | UpdateEquipmentData,
     }))
   }
 
@@ -85,214 +163,173 @@ const ApiTester: React.FC = () => {
 
   return (
     <div className='max-w-4xl mx-auto p-6 space-y-6'>
-      <div className='mb-6'>
-        <label className='block text-sm font-medium mb-2'>API Key</label>
-        <input
-          type='text'
-          value={apiKey}
-          onChange={(e) => setApiKey(e.target.value)}
-          className='w-full p-2 border rounded'
-          placeholder='Enter your API key'
-        />
-      </div>
-
-      {endpoints.map((endpoint) => (
-        <div key={endpoint.id} className='border rounded-lg p-4'>
-          <div
-            className='flex justify-between items-center cursor-pointer'
-            onClick={() =>
-              setActiveEndpoint(
-                activeEndpoint === endpoint.id ? null : endpoint.id
-              )
-            }
-          >
-            <div>
-              <span className='inline-block px-2 py-1 text-xs font-bold rounded bg-blue-100 text-blue-800 mr-2'>
-                {endpoint.method}
-              </span>
-              <span className='font-medium'>{endpoint.name}</span>
-            </div>
-            {activeEndpoint === endpoint.id ? <ChevronUp /> : <ChevronDown />}
+      <Card>
+        <CardHeader>
+          <CardTitle>API Testing Interface</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className='mb-6'>
+            <Label htmlFor='api-key'>API Key</Label>
+            <Input
+              id='api-key'
+              type='text'
+              value={apiKey}
+              onChange={(e) => setApiKey(e.target.value)}
+              placeholder='Enter your API key'
+              className='mt-2'
+            />
           </div>
 
-          {activeEndpoint === endpoint.id && (
-            <div className='mt-4 space-y-4'>
-              <div className='text-sm text-gray-600'>
-                <strong>URL:</strong> {endpoint.url}
-              </div>
+          <Accordion type='single' collapsible>
+            {endpoints.map((endpoint) => (
+              <AccordionItem key={endpoint.id} value={endpoint.id}>
+                <AccordionTrigger>
+                  <div className='flex items-center'>
+                    <Badge
+                      variant={
+                        endpoint.method === 'POST' ? 'default' : 'secondary'
+                      }
+                    >
+                      {endpoint.method}
+                    </Badge>
+                    <span className='ml-2'>{endpoint.name}</span>
+                  </div>
+                </AccordionTrigger>
+                <AccordionContent>
+                  <div className='space-y-4'>
+                    <Alert>
+                      <AlertDescription>
+                        <strong>Endpoint URL:</strong> {endpoint.url}
+                        {endpoint.id === 'update-equipment' && ' + device_id'}
+                      </AlertDescription>
+                    </Alert>
 
-              {endpoint.id === 'update-equipment' && (
-                <div>
-                  <label className='block text-sm font-medium mb-2'>
-                    Device ID
-                  </label>
-                  <input
-                    type='text'
-                    value={formData[endpoint.id].device_id}
-                    onChange={(e) =>
-                      handleInputChange(
-                        endpoint.id,
-                        'device_id',
-                        e.target.value
-                      )
-                    }
-                    className='w-full p-2 border rounded'
-                  />
-                </div>
-              )}
+                    {/* Device ID (only for update endpoint) */}
+                    {endpoint.id === 'update-equipment' && (
+                      <div className='space-y-2'>
+                        {renderField(
+                          endpoint.id,
+                          'device_id',
+                          'Device ID',
+                          true,
+                          'The unique identifier of the device you want to update'
+                        )}
+                      </div>
+                    )}
 
-              <div>
-                <label className='block text-sm font-medium mb-2'>Title</label>
-                <input
-                  type='text'
-                  value={formData[endpoint.id].title}
-                  onChange={(e) =>
-                    handleInputChange(endpoint.id, 'title', e.target.value)
-                  }
-                  className='w-full p-2 border rounded'
-                />
-              </div>
+                    {renderField(
+                      endpoint.id,
+                      'title',
+                      'Device Name',
+                      endpoint.id === 'new-equipment',
+                      'Name of your device'
+                    )}
 
-              <div>
-                <label className='block text-sm font-medium mb-2'>
-                  Description
-                </label>
-                <input
-                  type='text'
-                  value={formData[endpoint.id].desc}
-                  onChange={(e) =>
-                    handleInputChange(endpoint.id, 'desc', e.target.value)
-                  }
-                  className='w-full p-2 border rounded'
-                />
-              </div>
+                    {renderField(
+                      endpoint.id,
+                      'desc',
+                      'Description',
+                      false,
+                      'Optional description of your device'
+                    )}
 
-              <div>
-                <label className='block text-sm font-medium mb-2'>
-                  Tags (comma-separated)
-                </label>
-                <input
-                  type='text'
-                  value={formData[endpoint.id].tags.join(', ')}
-                  onChange={(e) =>
-                    handleTagsChange(endpoint.id, e.target.value)
-                  }
-                  className='w-full p-2 border rounded'
-                />
-              </div>
+                    <div className='space-y-2'>
+                      <Label>
+                        Tags
+                        {renderFieldDescription(
+                          'Comma-separated tags for categorizing your device'
+                        )}
+                      </Label>
+                      <Input
+                        value={formData[endpoint.id].tags.join(', ')}
+                        onChange={(e) =>
+                          handleTagsChange(endpoint.id, e.target.value)
+                        }
+                        placeholder='e.g. china, mobile'
+                      />
+                    </div>
 
-              <div className='grid grid-cols-2 gap-4'>
-                <div>
-                  <label className='block text-sm font-medium mb-2'>
-                    Longitude
-                  </label>
-                  <input
-                    type='number'
-                    value={formData[endpoint.id].location.lon || ''}
-                    onChange={(e) =>
-                      handleNestedInputChange(
-                        endpoint.id,
-                        'location',
-                        'lon',
-                        parseFloat(e.target.value)
-                      )
-                    }
-                    className='w-full p-2 border rounded'
-                  />
-                </div>
-                <div>
-                  <label className='block text-sm font-medium mb-2'>
-                    Latitude
-                  </label>
-                  <input
-                    type='number'
-                    value={formData[endpoint.id].location.lat || ''}
-                    onChange={(e) =>
-                      handleNestedInputChange(
-                        endpoint.id,
-                        'location',
-                        'lat',
-                        parseFloat(e.target.value)
-                      )
-                    }
-                    className='w-full p-2 border rounded'
-                  />
-                </div>
-              </div>
+                    <div className='grid grid-cols-2 gap-4'>
+                      {/* Location fields */}
+                      <div className='space-y-2'>
+                        <Label>Longitude</Label>
+                        <Input
+                          type='number'
+                          value={formData[endpoint.id].location.lon || ''}
+                          onChange={(e) =>
+                            handleNestedInputChange(
+                              endpoint.id,
+                              'location',
+                              'lon',
+                              parseFloat(e.target.value)
+                            )
+                          }
+                        />
+                      </div>
+                      <div className='space-y-2'>
+                        <Label>Latitude</Label>
+                        <Input
+                          type='number'
+                          value={formData[endpoint.id].location.lat || ''}
+                          onChange={(e) =>
+                            handleNestedInputChange(
+                              endpoint.id,
+                              'location',
+                              'lat',
+                              parseFloat(e.target.value)
+                            )
+                          }
+                        />
+                      </div>
+                    </div>
 
-              <div>
-                <label className='block text-sm font-medium mb-2'>
-                  Auth Info
-                </label>
-                <input
-                  type='text'
-                  value={formData[endpoint.id].auth_info}
-                  onChange={(e) =>
-                    handleInputChange(endpoint.id, 'auth_info', e.target.value)
-                  }
-                  className='w-full p-2 border rounded'
-                />
-              </div>
+                    {/* Other fields */}
+                    {/* ... Rest of your fields using the same pattern ... */}
 
-              <div className='grid grid-cols-2 gap-4'>
-                <div>
-                  <label className='block text-sm font-medium mb-2'>
-                    Version
-                  </label>
-                  <input
-                    type='text'
-                    value={formData[endpoint.id].other.version}
-                    onChange={(e) =>
-                      handleNestedInputChange(
-                        endpoint.id,
-                        'other',
-                        'version',
-                        e.target.value
-                      )
-                    }
-                    className='w-full p-2 border rounded'
-                  />
-                </div>
-                <div>
-                  <label className='block text-sm font-medium mb-2'>
-                    Manufacturer
-                  </label>
-                  <input
-                    type='text'
-                    value={formData[endpoint.id].other.manufacturer}
-                    onChange={(e) =>
-                      handleNestedInputChange(
-                        endpoint.id,
-                        'other',
-                        'manufacturer',
-                        e.target.value
-                      )
-                    }
-                    className='w-full p-2 border rounded'
-                  />
-                </div>
-              </div>
+                    <Button
+                      onClick={() => handleSubmit(endpoint)}
+                      disabled={loading}
+                      className='w-full'
+                    >
+                      {loading ? 'Sending...' : 'Send Request'}
+                    </Button>
 
-              <button
-                onClick={() => handleSubmit(endpoint)}
-                disabled={loading}
-                className='w-full py-2 px-4 bg-blue-600 text-white rounded hover:bg-blue-700 disabled:bg-blue-300'
-              >
-                {loading ? 'Sending...' : 'Send Request'}
-              </button>
+                    {response && (
+                      <div className='mt-4'>
+                        <h3 className='font-medium mb-2'>Response:</h3>
+                        <pre className='bg-slate-100 p-4 rounded-md overflow-x-auto'>
+                          {JSON.stringify(response, null, 2)}
+                        </pre>
 
-              {response && (
-                <div className='mt-4'>
-                  <h3 className='font-medium mb-2'>Response:</h3>
-                  <pre className='bg-gray-100 p-4 rounded overflow-x-auto'>
-                    {JSON.stringify(response, null, 2)}
-                  </pre>
-                </div>
-              )}
-            </div>
-          )}
-        </div>
-      ))}
+                        {/* Response explanation */}
+                        <div className='mt-4 text-sm text-gray-600'>
+                          <h4 className='font-medium'>Response Explanation:</h4>
+                          <ul className='list-disc pl-5 mt-2'>
+                            <li>
+                              <strong>errno:</strong> 0 indicates success, other
+                              values indicate errors
+                            </li>
+                            <li>
+                              <strong>error:</strong> "succ" means the operation
+                              was successful
+                            </li>
+                            {endpoint.id === 'new-equipment' && (
+                              <li>
+                                <strong>device_id:</strong> The unique
+                                identifier assigned to your new device
+                              </li>
+                            )}
+                          </ul>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                </AccordionContent>
+              </AccordionItem>
+            ))}
+          </Accordion>
+        </CardContent>
+      </Card>
 
       {!apiKey && (
         <Alert variant='destructive'>

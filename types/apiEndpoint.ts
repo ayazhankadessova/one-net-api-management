@@ -1,14 +1,16 @@
+// types/apiEndpoint.ts
+
 interface Location {
   lon: number | null
   lat: number | null
 }
 
-interface Other {
+export interface Other {
   version: string
   manufacturer: string
 }
 
-interface BaseEquipmentData {
+export interface BaseEquipmentData {
   title: string
   desc: string
   tags: string[]
