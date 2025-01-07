@@ -361,7 +361,7 @@ export function UpdateEquipmentForm({ apiKey }: Props) {
             onClick={handleSubmit}
             disabled={loading || !isFormValid() || !apiKey}
           >
-            {loading ? 'Creating Equipment...' : 'Create Equipment'}
+            {loading ? 'Updating Equipment...' : 'Update Equipment'}
           </Button>
 
           {/* Response Display */}
