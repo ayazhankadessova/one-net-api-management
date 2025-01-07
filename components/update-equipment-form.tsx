@@ -12,6 +12,7 @@ import { AlertCircle } from 'lucide-react'
 import { FieldLabel } from '@/components/field-label'
 import { UpdateEquipmentRequest } from '@/types/updateEquipment'
 import { Location, ApiResponse } from '@/types/common'
+import { validateCoordinates } from '@/lib/utils'
 
 const initialFormData: UpdateEquipmentRequest = {
   device_id: '',
@@ -34,22 +35,47 @@ interface Props {
 export function UpdateEquipmentForm({ apiKey }: Props) {
   const [loading, setLoading] = useState(false)
   const [response, setResponse] = useState<ApiResponse | null>(null)
+  const [locationErrors, setLocationErrors] = useState({
+    lon: '',
+    lat: '',
+  })
   const [formData, setFormData] =
     useState<UpdateEquipmentRequest>(initialFormData)
 
   const handleLocationChange = (field: keyof Location, value: string) => {
+    const numValue = value ? parseFloat(value) : null
+    const error = validateCoordinates(field, numValue)
+
+    setLocationErrors((prev) => ({
+      ...prev,
+      [field]: error,
+    }))
+
     setFormData((prev) => ({
       ...prev,
       location: {
         ...(prev.location || { lon: null, lat: null }),
-        [field]: value ? parseFloat(value) : null,
+        [field]: numValue,
       },
     }))
   }
 
+  const isFormValid = () => {
+    return (
+      !!formData.device_id &&
+      !locationErrors.lat &&
+      !locationErrors.lon &&
+      (!formData.location?.lat ||
+        validateCoordinates('lat', formData.location.lat) === '') &&
+      (!formData.location?.lon ||
+        validateCoordinates('lon', formData.location.lon) === '')
+    )
+  }
+
   const handleSubmit = async () => {
-    if (!formData.device_id) {
-      return
+
+    if (!isFormValid()) {
+        return
     }
 
     // Remove empty optional fields before sending
@@ -184,7 +210,7 @@ export function UpdateEquipmentForm({ apiKey }: Props) {
               <div className='space-y-2'>
                 <FieldLabel
                   label='Longitude'
-                  description='Geographic longitude coordinate'
+                  description='Geographic longitude coordinate (-180 to 180)'
                 />
                 <Input
                   type='number'
@@ -192,12 +218,16 @@ export function UpdateEquipmentForm({ apiKey }: Props) {
                   onChange={(e) => handleLocationChange('lon', e.target.value)}
                   step='any'
                   placeholder='e.g. 109'
+                  className={locationErrors.lon ? 'border-red-500' : ''}
                 />
+                {locationErrors.lon && (
+                  <p className='text-sm text-red-500'>{locationErrors.lon}</p>
+                )}
               </div>
               <div className='space-y-2'>
                 <FieldLabel
                   label='Latitude'
-                  description='Geographic latitude coordinate'
+                  description='Geographic latitude coordinate (-90 to 90)'
                 />
                 <Input
                   type='number'
@@ -205,7 +235,11 @@ export function UpdateEquipmentForm({ apiKey }: Props) {
                   onChange={(e) => handleLocationChange('lat', e.target.value)}
                   step='any'
                   placeholder='e.g. 23.54'
+                  className={locationErrors.lat ? 'border-red-500' : ''}
                 />
+                {locationErrors.lat && (
+                  <p className='text-sm text-red-500'>{locationErrors.lat}</p>
+                )}
               </div>
             </div>
           </div>
@@ -325,14 +359,13 @@ export function UpdateEquipmentForm({ apiKey }: Props) {
             </div>
           </div>
 
-
           {/* Submit Button */}
           <Button
             className='w-full'
             onClick={handleSubmit}
-            disabled={loading || !formData.device_id || !apiKey}
+            disabled={loading || !isFormValid() || !apiKey}
           >
-            {loading ? 'Updating Equipment...' : 'Update Equipment'}
+            {loading ? 'Creating Equipment...' : 'Create Equipment'}
           </Button>
 
           {/* Response Display */}
