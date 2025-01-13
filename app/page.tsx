@@ -1,6 +1,4 @@
-// app/page.tsx
 'use client'
-
 import { useState } from 'react'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
@@ -11,6 +9,7 @@ import { AlertCircle } from 'lucide-react'
 import { NewEquipmentForm } from '@/components/new-equipment'
 import { UpdateEquipmentForm } from '@/components/update-equipment-form'
 import { QueryDatastreamsForm } from '@/components/query-datastreams'
+import { DeviceDataVisualization } from '@/components/device-data-visualization' // Add this import
 
 export default function Home() {
   const [apiKey, setApiKey] = useState('')
@@ -45,11 +44,16 @@ export default function Home() {
       )}
 
       <Tabs defaultValue='new' className='space-y-4'>
-        <TabsList className='grid w-full grid-cols-3'>
+        <TabsList className='grid w-full grid-cols-4'>
+          {' '}
+          {/* Changed to 4 columns */}
           <TabsTrigger value='new'>New Equipment</TabsTrigger>
           <TabsTrigger value='update'>Update Equipment</TabsTrigger>
           <TabsTrigger value='query'>Query DataStreams</TabsTrigger>
+          <TabsTrigger value='data'>Historical Data</TabsTrigger>{' '}
+          {/* New tab */}
         </TabsList>
+
         <TabsContent value='new' className='mt-6'>
           <NewEquipmentForm apiKey={apiKey} />
         </TabsContent>
@@ -58,6 +62,9 @@ export default function Home() {
         </TabsContent>
         <TabsContent value='query' className='mt-6'>
           <QueryDatastreamsForm apiKey={apiKey} />
+        </TabsContent>
+        <TabsContent value='data' className='mt-6'>
+          <DeviceDataVisualization apiKey={apiKey} />
         </TabsContent>
       </Tabs>
     </div>

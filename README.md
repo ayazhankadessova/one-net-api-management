@@ -232,3 +232,37 @@ This is a simple frontend for making API calls to [OneNet](https://onenet.hk.chi
 | -------------- | ------ | ----------- |
 | at | string | Data recording time |
 | value | string/int/json... | data point |
+
+- Request example 1
+
+* Request example 1
+
+- Request device 8029377 from the 1st to 100th data of data stream ds since midnight on January 1, 2017
+
+- GET http://api.onenet.hk.chinamobile.com/devices/8029377/datapoints?datastream_id=ds&start=2017-01-
+
+- Return example 1
+
+```
+{
+    "errno": 0,
+    "data": [{
+        "update_at": "2017-11-20 10:03:10",
+        "id": "aaa",
+        "create_time": "2017-11-20 09:59:35",
+        "current_value": {
+            "Header": {
+                "CipherType": 1,
+                "DevType": 1
+            },
+            "Body":  3
+        }
+    }, {
+        "update_at": "2017-12-22 10:30:22",
+        "id": "bbb",
+        "create_time": "2017-12-22 10:12:36",
+        "current_value": 1
+    }],
+    "error": "succ"
+}
+```
