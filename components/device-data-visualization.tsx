@@ -60,7 +60,7 @@ export function DeviceDataVisualization({ apiKey }: Props) {
       if (formData.sort) params.append('sort', formData.sort)
 
       const response = await fetch(
-        `http://api.onenet.hk.chinamobile.com/devices/${deviceId}/datapoints?${params.toString()}`,
+        `/api/devices/${deviceId}/datapoints?${params.toString()}`,
         {
           headers: {
             'api-key': apiKey,
