@@ -184,3 +184,51 @@ This is a simple frontend for making API calls to [OneNet](https://onenet.hk.chi
  }],
  "error": "succ"
 }
+
+## 4. Query Device Historical Data
+
+- `GET` http://api.onenet.hk.chinamobile.com/devices/{device_id}/datapoints
+
+* device_id: needs to be replaced with device ID
+
+- http body parameters
+
+| Parameter name | Format | Is it necessary | Description |
+| -------------- | ------ | ---------------- | ----------- |
+| datastream_id | string | no | data stream ID | Data flow ID, separate multiple IDs with commas. By default, all data flows are queried. |
+| start | string | no | The start time of extracting data points, accurate to seconds, example: 2015-01-10T08:00:35 |
+| end | string | no | The end time of extracting data points, accurate to seconds, example: 2015-01-10T08:00:35 |
+| duration | int | no | The duration of the data point to be extracted, in seconds, the start time is the end time minus the duration |
+| limit | int | no | Limit the maximum number of data points returned by this request, the default is 100, the range is 0, 6000 |
+| cursor | string | no | Specify that this request will continue to extract data from the cursor location. |
+| sort | enum | no | Time sorting method, DESC: reverse order, ASC: ascending power, the default is ASC |
+
+- Return parameters
+
+| Parameter name | Format | Description |
+| -------------- | ------ | ----------- |
+| errno | int | call error code, 0 means the call is successful |
+| error | string | error description, "succ" means the call is successful |
+| data | json | data point information, see the data description table |
+
+- Data description table
+
+| Parameter name | Format | Description |
+| -------------- | ------ | ----------- |
+| count | string | The number of data points returned this time |
+| cursor | string | If this request fails to return all data, the cursor parameter will be returned. The user can make another request with the cursor parameter to obtain the remaining data. |
+| datastreams | array-json | data stream information, see the data description table |
+
+- Datastreams description table
+
+| Parameter name | Format | Description |
+| -------------- | ------ | ----------- |
+| id | string | Data flow name |
+| datapoints | array-json | data point information, see the data description table |
+
+- Datapoints description table
+
+| Parameter name | Format | Description |
+| -------------- | ------ | ----------- |
+| at | string | Data recording time |
+| value | string/int/json... | data point |
