@@ -2,11 +2,30 @@
 
 This is a simple frontend for making API calls to [OneNet](https://onenet.hk.chinamobile.com/subhk/doc/multiprotocol/book/develop/http/api/3.更新设备信息.html) for Creating Equipment, Updating Equipment & Querying Data Streams. Supports big screens only currently.
 
-# Docker Support
+<!-- vscode-markdown-toc -->
+* 1. [Docker Support](#DockerSupport)
+	* 1.1. [Quick Start with Docker](#QuickStartwithDocker)
+	* 1.2. [Building Locally w/ Docker](#BuildingLocallywDocker)
+	* 1.3. [Docker Compose (Optional)](#DockerComposeOptional)
+	* 1.4. [Environment Variables](#EnvironmentVariables)
+	* 1.5. [Container Registry](#ContainerRegistry)
+* 2. [API Documentation](#APIDocumentation)
+	* 2.1. [New Equipment](#NewEquipment)
+	* 2.2. [Update Equipment Information](#UpdateEquipmentInformation)
+	* 2.3. [Query data flow information in batches](#Querydataflowinformationinbatches)
+	* 2.4. [Query Device Historical Data](#QueryDeviceHistoricalData)
+
+<!-- vscode-markdown-toc-config
+	numbering=true
+	autoSave=true
+	/vscode-markdown-toc-config -->
+<!-- /vscode-markdown-toc -->
+
+##  1. <a name='DockerSupport'></a>Docker Support
 
 This project is available as a Docker image. You can find it on Docker Hub at [ayazhankadessova/one-net-api](https://hub.docker.com/r/ayazhankadessova/one-net-api).
 
-## Quick Start with Docker
+###  1.1. <a name='QuickStartwithDocker'></a>Quick Start with Docker
 
 1. Pull the image:
 ```bash
@@ -20,7 +39,7 @@ docker run -p 3000:3000 ayazhankadessova/one-net-api
 
 The application will be available at `http://localhost:3000`
 
-## Building Locally
+###  1.2. <a name='BuildingLocallywDocker'></a>Building Locally w/ Docker
 
 If you want to build the Docker image locally:
 
@@ -40,7 +59,7 @@ docker build -t one-net-api .
 docker run -p 3000:3000 one-net-api
 ```
 
-## Docker Compose (Optional)
+###  1.3. <a name='DockerComposeOptional'></a>Docker Compose (Optional)
 
 Create a `docker-compose.yml` file:
 
@@ -60,7 +79,7 @@ Then run:
 docker-compose up
 ```
 
-## Environment Variables
+###  1.4. <a name='EnvironmentVariables'></a>Environment Variables
 
 The following environment variables can be set when running the container:
 
@@ -72,12 +91,14 @@ Example with custom environment variables:
 docker run -p 3000:3000 -e NODE_ENV=development ayazhankadessova/one-net-api
 ```
 
-## Container Registry
+###  1.5. <a name='ContainerRegistry'></a>Container Registry
 
 The Docker image is hosted on Docker Hub and automatically updated with new releases. You can find all available tags at:
 [https://hub.docker.com/r/ayazhankadessova/one-net-api/tags](https://hub.docker.com/r/ayazhankadessova/one-net-api/tags)
 
-## 1. New Equipment
+##  2. <a name='APIDocumentation'></a>API Documentation
+
+###  2.1. <a name='NewEquipment'></a>New Equipment
 
 - `POST` http://api.onenet.hk.chinamobile.com/devices
 
@@ -140,7 +161,7 @@ The Docker image is hosted on Docker Hub and automatically updated with new rele
 }
 ```
 
-## 2. Update Equipment Information
+###  2.2. <a name='UpdateEquipmentInformation'></a>Update Equipment Information
 
 - `PUT` http://api.onenet.hk.chinamobile.com/devices/device_id
 
@@ -196,7 +217,7 @@ The Docker image is hosted on Docker Hub and automatically updated with new rele
 ```
 
 
-## 3. Query data flow information in batches
+###  2.3. <a name='Querydataflowinformationinbatches'></a>Query data flow information in batches
 
 - `GET` http://api.onenet.hk.chinamobile.com/devices/device_id/datastreams
 
@@ -260,7 +281,7 @@ The Docker image is hosted on Docker Hub and automatically updated with new rele
  "error": "succ"
 }
 
-## 4. Query Device Historical Data
+###  2.4. <a name='QueryDeviceHistoricalData'></a>Query Device Historical Data
 
 - `GET` http://api.onenet.hk.chinamobile.com/devices/{device_id}/datapoints
 
