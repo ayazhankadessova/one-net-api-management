@@ -13,6 +13,7 @@ import { FieldLabel } from '@/components/field-label'
 import { UpdateEquipmentRequest } from '@/types/updateEquipment'
 import { Location, ApiResponse } from '@/types/common'
 import { validateCoordinates } from '@/lib/utils'
+import {DeviceSelector} from '@/components/device-selector'
 
 const initialFormData: UpdateEquipmentRequest = {
   device_id: '',
@@ -128,16 +129,11 @@ export function UpdateEquipmentForm({ apiKey }: Props) {
                 required
                 description='The unique identifier of the device to update'
               />
-              <Input
+              <DeviceSelector
                 value={formData.device_id}
-                onChange={(e) =>
-                  setFormData((prev) => ({
-                    ...prev,
-                    device_id: e.target.value,
-                  }))
+                onValueChange={(value) =>
+                  setFormData((prev) => ({ ...prev, device_id: value }))
                 }
-                placeholder='Enter device ID'
-                required
               />
             </div>
           </div>
