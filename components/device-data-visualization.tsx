@@ -27,6 +27,7 @@ import {
 } from '@/components/ui/table'
 import { format } from 'date-fns'
 import { DeviceDataRequest, DeviceDataResponse } from '@/types/deviceData'
+import { DeviceSelector } from '@/components/device-selector'
 
 interface Props {
   apiKey: string
@@ -97,11 +98,34 @@ export function DeviceDataVisualization({ apiKey }: Props) {
       return (
         <div className='h-[400px] mt-4'>
           <ResponsiveContainer width='100%' height='100%'>
-            <LineChart data={chartData}>
+            <LineChart
+              data={chartData}
+              margin={{
+                // Add margin to ensure labels are visible
+                top: 20,
+                right: 30,
+                left: 20,
+                bottom: 100,
+              }}
+            >
               <CartesianGrid strokeDasharray='3 3' />
-              <XAxis dataKey='time' angle={-45} textAnchor='end' height={70} />
+              <XAxis
+                dataKey='time'
+                angle={-45}
+                textAnchor='end'
+                height={90} // Increase height
+                interval='preserveStartEnd' // Show only start and end ticks
+                tick={{
+                  fontSize: 12,
+                  dy: 25, // Move labels down
+                }}
+              />
               <YAxis />
-              <Tooltip />
+              <Tooltip
+                labelFormatter={(label) =>
+                  format(new Date(label.split('\n')[0]), 'yyyy-MM-dd HH:mm:ss')
+                }
+              />
               <Line
                 type='monotone'
                 dataKey='value'
@@ -152,11 +176,10 @@ export function DeviceDataVisualization({ apiKey }: Props) {
               required
               description='The device ID to query'
             />
-            <Input
+
+            <DeviceSelector
               value={deviceId}
-              onChange={(e) => setDeviceId(e.target.value)}
-              placeholder='Enter device ID'
-              required
+              onValueChange={(value) => setDeviceId(value)}
             />
           </div>
 

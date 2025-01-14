@@ -19,6 +19,7 @@ import {
 } from '@/components/ui/table'
 import { format } from 'date-fns'
 import { QueryDevicesRequest, QueryDevicesResponse } from '@/types/deviceDetails'
+import {MultiDeviceSelector} from '@/components/multi-device-selector'
 
 interface Props {
   apiKey: string
@@ -38,6 +39,13 @@ export function QueryDevicesForm({ apiKey }: Props) {
       fetchData()
     }
   }, [formData.page]) 
+
+  const handleDeviceIdsChange = (ids: string[]) => {
+    setFormData((prev) => ({
+      ...prev,
+      device_id: ids.length > 0 ? ids.join(',') : undefined,
+    }))
+  }
 
   const fetchData = async () => {
     setLoading(true)
@@ -93,15 +101,12 @@ export function QueryDevicesForm({ apiKey }: Props) {
                 label='Device IDs'
                 description='Comma-separated list of device IDs (max 100)'
               />
-              <Input
-                value={formData.device_id}
-                onChange={(e) =>
-                  setFormData((prev) => ({
-                    ...prev,
-                    device_id: e.target.value,
-                  }))
+              <MultiDeviceSelector
+                selectedIds={
+                  formData.device_id ? formData.device_id.split(',') : []
                 }
-                placeholder='e.g. 35282992,35271941'
+                onChange={handleDeviceIdsChange}
+                placeholder='Select devices...'
               />
             </div>
 

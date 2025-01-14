@@ -8,6 +8,7 @@ import { Alert, AlertDescription } from '@/components/ui/alert'
 import { Separator } from '@/components/ui/separator'
 import { AlertCircle } from 'lucide-react'
 import { FieldLabel } from '@/components/field-label'
+import { DeviceSelector } from '@/components/device-selector'
 
 interface DatastreamResponse {
   errno: number
@@ -89,16 +90,11 @@ export function QueryDatastreamsForm({ apiKey }: Props) {
                 required
                 description='The unique identifier of the device to query'
               />
-              <Input
+              <DeviceSelector
                 value={formData.device_id}
-                onChange={(e) =>
-                  setFormData((prev) => ({
-                    ...prev,
-                    device_id: e.target.value,
-                  }))
+                onValueChange={(value) =>
+                  setFormData((prev) => ({ ...prev, device_id: value }))
                 }
-                placeholder='Enter device ID'
-                required
               />
             </div>
           </div>
