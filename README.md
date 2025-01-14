@@ -246,23 +246,68 @@ This is a simple frontend for making API calls to [OneNet](https://onenet.hk.chi
 ```
 {
     "errno": 0,
-    "data": [{
-        "update_at": "2017-11-20 10:03:10",
-        "id": "aaa",
-        "create_time": "2017-11-20 09:59:35",
-        "current_value": {
-            "Header": {
-                "CipherType": 1,
-                "DevType": 1
-            },
-            "Body":  3
-        }
-    }, {
-        "update_at": "2017-12-22 10:30:22",
-        "id": "bbb",
-        "create_time": "2017-12-22 10:12:36",
-        "current_value": 1
-    }],
+    "data": {
+        "cursor": "83900_8029377_1498708525203",
+        "count": 100,
+        "datastreams": [{
+            "datapoints": [{
+                "at": "2017-06-23 11:09:46.281",
+                "value": "112312"
+            }, {
+                "at": "2017-06-23 11:09:58.799",
+                "value": "112312"
+            }, {
+                "at": "2017-06-23 11:09:58.802",
+                "value": "1213"
+            }, {
+                "at": "2017-06-23 11:10:17.962",
+                "value": "1"
+            }, 
+            ...
+            {
+                "at": "2017-06-29 11:55:20.198",
+                "value": "hello"
+            }],
+            "id": "ds"
+        }]
+    },
     "error": "succ"
 }
 ```
+
+In this example, only the first 100 pieces of data since midnight on January 1, 2017 are returned. If you need to continue to obtain the next data, you need to
+
+- Request example 2
+
+- Get the 101st piece of data since midnight on January 1, 2017, to the 1100th piece of data
+
+- `GET` http://api.onenet.hk.chinamobile.com/devices/8029377/datapoints?datastream_id=ds&start=2017-01-
+
+```
+{
+    "errno": 0,
+    "data": {
+        "count": 1000,
+        "datastreams": [{
+            "datapoints": [{
+                "at": "2017-06-23 11:10:41.475",
+                "value": "awefa"
+            }, {
+                "at": "2017-06-23 11:11:12.839",
+                "value": "ad3"
+            }, 
+            ...
+            {
+                "at": "2017-06-25 11:13:54.249",
+                "value": "RA414124124124"
+            }, {
+                "at": "2017-06-25 21:07:43.024",
+                "value": "13dfadfafzfadf#123affad"
+            }],
+            "id": "ds"
+        }]
+    },
+    "error": "succ"
+}
+```
+
