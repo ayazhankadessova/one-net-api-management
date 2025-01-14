@@ -407,3 +407,115 @@ In this example, only the first 100 pieces of data since midnight on January 1, 
 }
 ```
 
+
+### Batch query device information
+
+- Request method: GET
+- URL: http://api.onenet.hk.chinamobile.com/devices
+- URL parameters
+
+| Parameter name | Format | Is it necessary | Description |
+| -------------- | ------ | ---------------- | ----------- |
+| Key_words	| String | No  | Match keywords, left match from the id and title fields |
+| Auth_info	| String | No  | Information on rights |
+| Tag	| Array-string | No  | Device label |
+| Online	| Bool | No  | The online status of the device |
+| Private	| Bool | No  | Device privacy |
+| Page	| Int | No  | Specify the page number, and the maximum number of pages is 10,000. |
+| Per_page	| Int | No  | Specify the number of output devices per page, the default is 30, and the maximum is 100. |
+| Device_id	| String | No  | Specify the device ID, separated by commas, up to 100 |
+| Begin	| String | No  | Start time, Beijing time, example: 6/20/2016 |
+| End	| String | No  | End time, Beijing time, example: 6/20/2016 |
+
+
+- Return the parameters
+
+| Parameter name | Format | Description |
+| -------------- | ------ | ----------- |
+| errno	| Int	| The error code is calced, and 0 means the calcation is successful. |
+| Error	| String	| Error description, "succ" means successful cal |
+| Data	| Json	| For the device-related information returned after the interface is successfully called, please refer to the data description table. |
+
+- data description table
+
+| Parameter name | Format | Description |
+| -------------- | ------ | ----------- |
+| Total_count	| Int	| The number of devices in the query results |
+| Page	| Int	| Current page |
+| Per_page	| Int	| The number of equipment per page |
+| Devices	| Array-json	| The json array of device information, see the devices description table |
+
+- Devices description table
+
+| Parameter name | Format | Description |
+| -------------- | ------ | ----------- |
+| Protocol	| String	| Device access protocol |
+| Create_time	| String	| Equipment creation time, Beijing time |
+| Online	| Bool	| The online status of the device |
+| Id	| String	| Device ID |
+| Auth_info	| String	| Device reference information, corresponding to the "sn" or "mac" parameters in the device registration interface |
+| Title	| String	| Equipment name |
+| Desc	| String	| Device description |
+| Tags	| Array-string	| Device label |
+| location	| Json	| Device position coordinate information, represented by longitude and latitude key value pairs: {"lon":xx, "lat":xx} |
+| Other	| Json	| Custom information of other devices is represented in the format of key-value pairs, see the example. |
+
+- Request Example 1
+
+- Query online devices labeled with china from 2017-02-04 to 2017-06-04
+
+- GET http://api.onenet.hk.chinamobile.com/devices? Begin=2017-02-04&end=2017-06-04&online=true&tag=ch
+
+- Request Example 2
+
+- Query two devices with device IDs of 35282992 and 35271941
+
+- GET http://api.onenet.hk.chinamobile.com/devices? Device_id=35282992,35271941 HTTP/1.1
+
+- Request Example 3
+
+- Query all the devices under this product
+
+- GET http://api.onenet.hk.chinamobile.com/devices HTTP/1.1
+
+- Return to the example
+
+```
+
+{
+    "errno": 0,
+    "data": {
+        "per_page": 30,
+        "devices": [{
+            "protocol": "EDP",
+            "other": {
+                "version": "1.0.0",
+                "manufacturer": "china mobile"
+            },
+            "create_time": "2018-06-04 17:43:11",
+            "online": true,
+            "location": {
+                "lat": 23.54,
+                "lon": 109
+            },
+            "id": "35282992",
+            "auth_info": "tes01235n82105",
+            "title": "test_device",
+            "desc": "test_desc",
+            "tags": ["china", "mobile"]
+        }, {
+            "protocol": "EDP",
+            "create_time": "2018-06-04 11:15:38",
+            "online": true,
+            "id": "35271941",
+            "auth_info": "tes810372105",
+            "title": "test_device",
+            "tags": ["china"]
+        }],
+        "total_count": 2,
+        "page": 1
+    },
+    "error": "succ"
+}
+
+```

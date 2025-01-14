@@ -9,7 +9,8 @@ import { AlertCircle } from 'lucide-react'
 import { NewEquipmentForm } from '@/components/new-equipment'
 import { UpdateEquipmentForm } from '@/components/update-equipment-form'
 import { QueryDatastreamsForm } from '@/components/query-datastreams'
-import { DeviceDataVisualization } from '@/components/device-data-visualization' // Add this import
+import { DeviceDataVisualization } from '@/components/device-data-visualization' 
+import { QueryDevicesForm } from '@/components/query-device-details' 
 
 export default function Home() {
   const [apiKey, setApiKey] = useState('')
@@ -44,13 +45,13 @@ export default function Home() {
       )}
 
       <Tabs defaultValue='new' className='space-y-4'>
-        <TabsList className='grid w-full grid-cols-4'>
+        <TabsList className='grid w-full grid-cols-5'>
           {' '}
-          {/* Changed to 4 columns */}
-          <TabsTrigger value='new'>New Equipment</TabsTrigger>
+          <TabsTrigger value='new'>New Equipmet</TabsTrigger>
           <TabsTrigger value='update'>Update Equipment</TabsTrigger>
           <TabsTrigger value='query'>Query DataStreams</TabsTrigger>
           <TabsTrigger value='data'>Historical Data</TabsTrigger>{' '}
+          <TabsTrigger value='details'>Batch Query Device Details</TabsTrigger>
           {/* New tab */}
         </TabsList>
 
@@ -65,6 +66,9 @@ export default function Home() {
         </TabsContent>
         <TabsContent value='data' className='mt-6'>
           <DeviceDataVisualization apiKey={apiKey} />
+        </TabsContent>
+        <TabsContent value='details' className='mt-6'>
+          <QueryDevicesForm apiKey={apiKey} />
         </TabsContent>
       </Tabs>
     </div>
