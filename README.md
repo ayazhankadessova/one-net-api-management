@@ -2,6 +2,81 @@
 
 This is a simple frontend for making API calls to [OneNet](https://onenet.hk.chinamobile.com/subhk/doc/multiprotocol/book/develop/http/api/3.更新设备信息.html) for Creating Equipment, Updating Equipment & Querying Data Streams. Supports big screens only currently.
 
+# Docker Support
+
+This project is available as a Docker image. You can find it on Docker Hub at [ayazhankadessova/one-net-api](https://hub.docker.com/r/ayazhankadessova/one-net-api).
+
+## Quick Start with Docker
+
+1. Pull the image:
+```bash
+docker pull ayazhankadessova/one-net-api
+```
+
+2. Run the container:
+```bash
+docker run -p 3000:3000 ayazhankadessova/one-net-api
+```
+
+The application will be available at `http://localhost:3000`
+
+## Building Locally
+
+If you want to build the Docker image locally:
+
+1. Clone the repository:
+```bash
+git clone [your-repo-url]
+cd [your-repo-name]
+```
+
+2. Build the image:
+```bash
+docker build -t one-net-api .
+```
+
+3. Run the container:
+```bash
+docker run -p 3000:3000 one-net-api
+```
+
+## Docker Compose (Optional)
+
+Create a `docker-compose.yml` file:
+
+```yaml
+version: '3.8'
+services:
+  app:
+    image: ayazhankadessova/one-net-api
+    ports:
+      - "3000:3000"
+    environment:
+      - NODE_ENV=production
+```
+
+Then run:
+```bash
+docker-compose up
+```
+
+## Environment Variables
+
+The following environment variables can be set when running the container:
+
+- `NODE_ENV`: Set to 'production' by default
+- `PORT`: The port the application runs on (default: 3000)
+
+Example with custom environment variables:
+```bash
+docker run -p 3000:3000 -e NODE_ENV=development ayazhankadessova/one-net-api
+```
+
+## Container Registry
+
+The Docker image is hosted on Docker Hub and automatically updated with new releases. You can find all available tags at:
+[https://hub.docker.com/r/ayazhankadessova/one-net-api/tags](https://hub.docker.com/r/ayazhankadessova/one-net-api/tags)
+
 ## 1. New Equipment
 
 - `POST` http://api.onenet.hk.chinamobile.com/devices
