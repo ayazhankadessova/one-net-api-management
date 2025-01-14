@@ -1,7 +1,7 @@
 // components/query-devices-form.tsx
 'use client'
 
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
@@ -29,9 +29,15 @@ export function QueryDevicesForm({ apiKey }: Props) {
   const [response, setResponse] = useState<QueryDevicesResponse | null>(null)
   const [formData, setFormData] = useState<QueryDevicesRequest>({
     key_words: '',
-    per_page: 2,
+    per_page: 5,
     page: 1,
   })
+
+  useEffect(() => {
+    if (formData.page) {
+      fetchData()
+    }
+  }, [formData.page]) 
 
   const fetchData = async () => {
     setLoading(true)
