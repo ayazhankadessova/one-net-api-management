@@ -28,6 +28,7 @@ import {
 import { format } from 'date-fns'
 import { DeviceDataRequest, DeviceDataResponse } from '@/types/deviceData'
 import { DeviceSelector } from '@/components/device-selector'
+import { format as formatDate } from 'date-fns'
 
 interface Props {
   apiKey: string
@@ -44,6 +45,57 @@ export function DeviceDataVisualization({ apiKey }: Props) {
     limit: 100,
     sort: 'ASC',
   })
+
+  const downloadAsCSV = () => {
+    if (!response?.data?.datastreams?.length) return
+
+    // Create headers
+    const headers = [
+      'Timestamp',
+      ...response.data.datastreams.map((ds) => ds.id),
+    ]
+
+    // Create a map of timestamps to values
+    const dataMap = new Map<string, Record<string, string | number>>()
+
+    // Process each datastream
+    response.data.datastreams.forEach((datastream) => {
+      datastream.datapoints.forEach((point) => {
+        const timestamp = formatDate(new Date(point.at), 'yyyy-MM-dd HH:mm:ss')
+        if (!dataMap.has(timestamp)) {
+          dataMap.set(timestamp, { Timestamp: timestamp })
+        }
+        const row = dataMap.get(timestamp)!
+        row[datastream.id] = point.value
+      })
+    })
+
+    // Convert map to array of rows
+    const rows = Array.from(dataMap.values())
+
+    // Create CSV content
+    const csvContent = [
+      headers.join(','),
+      ...rows.map((row) =>
+        headers
+          .map((header) =>
+            header === 'Timestamp' ? row[header] : row[header] ?? ''
+          )
+          .join(',')
+      ),
+    ].join('\n')
+
+    // Create and trigger download
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' })
+    const link = document.createElement('a')
+    const fileName = `one-net-${formatDate(new Date(), 'yyyy-MM-dd')}.csv`
+
+    link.href = URL.createObjectURL(blob)
+    link.setAttribute('download', fileName)
+    document.body.appendChild(link)
+    link.click()
+    document.body.removeChild(link)
+  }
 
   const fetchData = async () => {
     if (!deviceId) return
@@ -268,6 +320,17 @@ export function DeviceDataVisualization({ apiKey }: Props) {
             <div className='space-y-4'>
               {response.errno === 0 ? (
                 <>
+                  {/* Add download button at the top of results */}
+                  {response.data.datastreams.length > 0 && (
+                    <Button
+                      variant='outline'
+                      onClick={downloadAsCSV}
+                      className='w-full'
+                    >
+                      Save as CSV
+                    </Button>
+                  )}
+
                   {response.data.datastreams.map((datastream) => (
                     <div key={datastream.id} className='space-y-4'>
                       <h4 className='font-medium'>
