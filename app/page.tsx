@@ -1,6 +1,5 @@
 'use client'
 import { useState } from 'react'
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -13,13 +12,14 @@ import { UpdateEquipmentForm } from '@/components/update-equipment-form'
 import { QueryDatastreamsForm } from '@/components/query-datastreams'
 import { DeviceDataVisualization } from '@/components/device-data-visualization' 
 import { QueryDevicesForm } from '@/components/query-device-details' 
+import { DeviceFileUpload } from '@/components/device-file-upload'
 
 export default function Home() {
   const [apiKey, setApiKey] = useState('')
   const [loading, setLoading] = useState(false)
+  const [selectedAction, setSelectedAction] = useState<string | null>(null)
   const { setDevices, devices } = useDevices()
   // length of devices
-
 
   const fetchDevices = async () => {
     if (!apiKey) return
@@ -48,8 +48,57 @@ export default function Home() {
     setLoading(false)
   }
 
+  const actions = [
+    { id: 'new', title: 'New Equipment', description: 'Create a new device' },
+    {
+      id: 'update',
+      title: 'Update Equipment',
+      description: 'Modify existing device',
+    },
+    {
+      id: 'query',
+      title: 'Query DataStreams',
+      description: 'View device datastreams',
+    },
+    {
+      id: 'data',
+      title: 'Historical Data',
+      description: 'View historical device data',
+    },
+    {
+      id: 'details',
+      title: 'Device Details',
+      description: 'Query device information',
+    },
+    {
+      id: 'upload',
+      title: 'Upload File',
+      description: 'Upload device-related files',
+    },
+  ]
+
+  const renderSelectedComponent = () => {
+    switch (selectedAction) {
+      case 'new':
+        return <NewEquipmentForm apiKey={apiKey} />
+      case 'update':
+        return <UpdateEquipmentForm apiKey={apiKey} />
+      case 'query':
+        return <QueryDatastreamsForm apiKey={apiKey} />
+      case 'data':
+        return <DeviceDataVisualization apiKey={apiKey} />
+      case 'details':
+        return <QueryDevicesForm apiKey={apiKey} />
+      case 'upload':
+        return <DeviceFileUpload apiKey={apiKey} />
+      default:
+        return null
+    }
+  }
+
   return (
     <div className='container mx-auto p-20 space-y-6'>
+      {/* API Key Card */}
       <Card>
         <CardHeader>
           <CardTitle>OneNET Equipment Management</CardTitle>
@@ -72,7 +121,6 @@ export default function Home() {
               </div>
             </div>
 
-            {/* Show devices count if available */}
             {devices.length > 0 && (
               <Alert>
                 <AlertDescription className='text-sm text-muted-foreground'>
@@ -93,33 +141,34 @@ export default function Home() {
         </Alert>
       )}
 
-      <Tabs defaultValue='new' className='space-y-4'>
-        <TabsList className='grid w-full grid-cols-5'>
-          {' '}
-          <TabsTrigger value='new'>New Equipmet</TabsTrigger>
-          <TabsTrigger value='update'>Update Equipment</TabsTrigger>
-          <TabsTrigger value='query'>Query DataStreams</TabsTrigger>
-          <TabsTrigger value='data'>Historical Data</TabsTrigger>{' '}
-          <TabsTrigger value='details'>Batch Query Device Details</TabsTrigger>
-          {/* New tab */}
-        </TabsList>
-
-        <TabsContent value='new' className='mt-6'>
-          <NewEquipmentForm apiKey={apiKey} />
-        </TabsContent>
-        <TabsContent value='update' className='mt-6'>
-          <UpdateEquipmentForm apiKey={apiKey} />
-        </TabsContent>
-        <TabsContent value='query' className='mt-6'>
-          <QueryDatastreamsForm apiKey={apiKey} />
-        </TabsContent>
-        <TabsContent value='data' className='mt-6'>
-          <DeviceDataVisualization apiKey={apiKey} />
-        </TabsContent>
-        <TabsContent value='details' className='mt-6'>
-          <QueryDevicesForm apiKey={apiKey} />
-        </TabsContent>
-      </Tabs>
+      {/* Actions Grid */}
+      {!selectedAction ? (
+        <div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4'>
+          {actions.map((action) => (
+            <Card
+              key={action.id}
+              className='cursor-pointer hover:border-primary transition-colors'
+              onClick={() => setSelectedAction(action.id)}
+            >
+              <CardHeader>
+                <CardTitle className='text-lg'>{action.title}</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <p className='text-sm text-muted-foreground'>
+                  {action.description}
+                </p>
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+      ) : (
+        <div className='space-y-4'>
+          <Button variant='outline' onClick={() => setSelectedAction(null)}>
+            ← Back to Actions
+          </Button>
+          {renderSelectedComponent()}
+        </div>
+      )}
     </div>
   )
 }

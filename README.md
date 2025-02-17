@@ -408,7 +408,7 @@ In this example, only the first 100 pieces of data since midnight on January 1, 
 ```
 
 
-### Batch query device information
+### 2.5 <a name='BatchQueryDeviceInformation'></a>Batch query device information 
 
 - Request method: GET
 - URL: http://api.onenet.hk.chinamobile.com/devices
@@ -518,4 +518,53 @@ In this example, only the first 100 pieces of data since midnight on January 1, 
     "error": "succ"
 }
 
+```
+
+### 2.6 <a name='UploadDeviceFile'></a>Upload device file
+
+- Request method: POST
+- URL: https://www.onenet.hk.chinamobile.com:2616/device/file-upload
+- URL parameters
+
+| Parameter name | Format | Is it necessary | Description |
+| -------------- | ------ | ---------------- | ----------- |
+| product_id |string | Product ID + device name or IMEI,one of them are required | Product ID |
+| device_name |string | Product ID + device name or IMEI,one of them are required | Device name |
+| imei |string | Product ID + device name or IMEI,one of them are required | Device imei |
+| file | | Yes | File stream, support .jpg .jpeg .png .bmp .gif .webp .tiff .txt； The size should not exceed 20MB |
+
+- Return the parameters
+
+| Parameter name | Format | Description |
+| -------------- | ------ | ----------- |
+| code | int | The error code is calced, and 0 means the calcation is successful. |
+| msg | string | Error description, "succ" means successful cal |
+| request_id | string | Request ID |
+| data | object | Return data details, see the data description table |
+| data.fid | string | fileID |
+
+- Example
+
+```
+Sample Request
+POST https://www.onenet.hk.chinamobile.com:2616/device/file-upload?imei=***
+Content-type: multipart/form-data
+
+{
+    "device_name": "device_name",
+    "product_id": "qwdfbht",
+    "imei": "xxx",
+    "file": file
+}
+```
+```
+Example of Response
+{
+    "code": 0,
+    "msg": "succ",
+    "request_id": "a25087f46df04b69b29e90ef0acfd115",
+    "data": {
+        "fid": "asddgdg23g4t3443425v52v532v56"
+    }
+}
 ```
