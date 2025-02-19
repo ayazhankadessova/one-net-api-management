@@ -7,15 +7,18 @@ import { Alert, AlertDescription } from '@/components/ui/alert'
 import { AlertCircle } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { useDevices } from '@/contexts/DevicesContext'
-import { NewEquipmentForm } from '@/components/new-equipment'
+import { NewEquipmentSelector } from '@/components/new-equipment'
 import { UpdateEquipmentForm } from '@/components/update-equipment-form'
 import { QueryDatastreamsForm } from '@/components/query-datastreams'
 import { DeviceDataVisualization } from '@/components/device-data-visualization' 
 import { QueryDevicesForm } from '@/components/query-device-details' 
 import { DeviceFileUpload } from '@/components/device-file-upload'
+import {FileSpaceInfo} from '@/components/file-space-info'
 
 export default function Home() {
-  const [apiKey, setApiKey] = useState('')
+  const [apiKey, setApiKey] = useState(
+    'R1kwRk5tdXlSRXVXTkVGdjBYeU83UEhTWmlaVjNNRWs='
+  )
   const [loading, setLoading] = useState(false)
   const [selectedAction, setSelectedAction] = useState<string | null>(null)
   const { setDevices, devices } = useDevices()
@@ -39,6 +42,7 @@ export default function Home() {
       })
 
       const data = await response.json()
+      console.log(data)
       if (data.errno === 0) {
         setDevices(data.data.devices)
       }
@@ -80,7 +84,7 @@ export default function Home() {
   const renderSelectedComponent = () => {
     switch (selectedAction) {
       case 'new':
-        return <NewEquipmentForm apiKey={apiKey} />
+        return <NewEquipmentSelector apiKey={apiKey} />
       case 'update':
         return <UpdateEquipmentForm apiKey={apiKey} />
       case 'query':
@@ -90,7 +94,7 @@ export default function Home() {
       case 'details':
         return <QueryDevicesForm apiKey={apiKey} />
       case 'upload':
-        return <DeviceFileUpload apiKey={apiKey} />
+        return <FileSpaceInfo />
       default:
         return null
     }
@@ -121,13 +125,13 @@ export default function Home() {
               </div>
             </div>
 
-            {devices.length > 0 && (
+            {/* {devices.length > 0 && (
               <Alert>
                 <AlertDescription className='text-sm text-muted-foreground'>
                   Found {devices.length} devices for this API key
                 </AlertDescription>
               </Alert>
-            )}
+            )} */}
           </div>
         </CardContent>
       </Card>

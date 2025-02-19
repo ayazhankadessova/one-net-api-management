@@ -8,6 +8,9 @@ import { Button } from '@/components/ui/button'
 import { Alert, AlertDescription } from '@/components/ui/alert'
 import { AlertCircle, Upload } from 'lucide-react'
 import { FieldLabel } from '@/components/field-label'
+import { FileUploadRequest, FileUploadResponse } from '@/types/fileUpload'
+// import { useDevices } from '@/contexts/DevicesContext'
+// import { DeviceSelector } from '@/components/device-selector'
 
 interface Props {
   apiKey: string
@@ -15,13 +18,34 @@ interface Props {
 
 export function DeviceFileUpload({ apiKey }: Props) {
   const [loading, setLoading] = useState(false)
-  const [response, setResponse] = useState<any>(null)
+  const [response, setResponse] = useState<FileUploadResponse | null>(null)
   const [selectedFile, setSelectedFile] = useState<File | null>(null)
-  const [deviceId, setDeviceId] = useState('')
+  const [formData, setFormData] = useState<Omit<FileUploadRequest, 'file'>>({
+    // product_id: '',
+    // device_name: '',
+    did: '40000000563'
+  })
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
       const file = e.target.files[0]
+      // Check file type
+      const allowedTypes = [
+        'image/jpeg',
+        'image/jpg',
+        'image/png',
+        'image/bmp',
+        'image/gif',
+        'image/webp',
+        'image/tiff',
+        'text/plain',
+      ]
+      if (!allowedTypes.includes(file.type)) {
+        alert(
+          'Unsupported file type. Please upload .jpg, .jpeg, .png, .bmp, .gif, .webp, .tiff, or .txt files.'
+        )
+        return
+      }
       // Check file size (20MB = 20 * 1024 * 1024 bytes)
       if (file.size > 20 * 1024 * 1024) {
         alert('File size should not exceed 20MB.')
@@ -32,16 +56,25 @@ export function DeviceFileUpload({ apiKey }: Props) {
   }
 
   const handleSubmit = async () => {
-    if (!selectedFile || !deviceId) {
-      alert('Please provide both a file and Device ID')
+    if (
+      !selectedFile
+    //   (!formData.product_id && !formData.device_name && !formData.imei)
+    ) {
+      alert(
+        'Please provide a file and at least one identifier (Product ID, Device Name, or IMEI)'
+      )
       return
     }
 
     setLoading(true)
     try {
       const submitFormData = new FormData()
-      submitFormData.append('did', deviceId)
       submitFormData.append('file', selectedFile)
+      if (formData.did)
+        submitFormData.append('did', formData.did)
+    //   if (formData.device_name)
+    //     submitFormData.append('device_name', formData.device_name)
+    //   if (formData.imei) submitFormData.append('imei', formData.imei)
 
       const response = await fetch('/api/devices/file-upload', {
         method: 'POST',
@@ -57,10 +90,11 @@ export function DeviceFileUpload({ apiKey }: Props) {
       setResponse({
         code: -1,
         msg: error instanceof Error ? error.message : 'An error occurred',
+        request_id: '',
+        data: { fid: '' },
       })
-    } finally {
-      setLoading(false)
     }
+    setLoading(false)
   }
 
   return (
@@ -70,29 +104,69 @@ export function DeviceFileUpload({ apiKey }: Props) {
       </CardHeader>
       <CardContent>
         <div className='space-y-6'>
+          {/* Device Identifiers */}
           <div className='space-y-4'>
             <div className='space-y-2'>
               <FieldLabel
                 label='Device ID'
-                required
-                description='The ID of the device to upload the file to'
+                description='Device ID (required if Device Name and IMEI not provided)'
               />
               <Input
-                value={deviceId}
-                onChange={(e) => setDeviceId(e.target.value)}
-                placeholder='Enter Device ID'
-                required
+                value={formData.did}
+                onChange={(e) =>
+                  setFormData((prev) => ({
+                    ...prev,
+                    did: e.target.value,
+                  }))
+                }
+                placeholder='Enter device ID'
               />
             </div>
 
+            {/* <div className='space-y-2'>
+              <FieldLabel
+                label='Device Name'
+                description='Device Name (required if Product ID and IMEI not provided)'
+              />
+              <Input
+                value={formData.device_name}
+                onChange={(e) =>
+                  setFormData((prev) => ({
+                    ...prev,
+                    device_name: e.target.value,
+                  }))
+                }
+                placeholder='Enter Device Name'
+              />
+            </div> */}
+
+            {/* <div className='space-y-2'>
+              <FieldLabel
+                label='IMEI'
+                description='IMEI (required if Product ID and Device Name not provided)'
+              />
+              <Input
+                value={formData.imei}
+                onChange={(e) =>
+                  setFormData((prev) => ({ ...prev, imei: e.target.value }))
+                }
+                placeholder='Enter IMEI'
+              />
+            </div> */}
+
+            {/* File Upload */}
             <div className='space-y-2'>
               <FieldLabel
                 label='File'
                 required
-                description='Select a file to upload (max 20MB)'
+                description='Supported formats: .jpg, .jpeg, .png, .bmp, .gif, .webp, .tiff, .txt (max 20MB)'
               />
               <div className='flex items-center gap-4'>
-                <Input type='file' onChange={handleFileChange} required />
+                <Input
+                  type='file'
+                  onChange={handleFileChange}
+                  accept='.jpg,.jpeg,.png,.bmp,.gif,.webp,.tiff,.txt'
+                />
                 {selectedFile && (
                   <span className='text-sm text-muted-foreground'>
                     {selectedFile.name}
@@ -105,7 +179,10 @@ export function DeviceFileUpload({ apiKey }: Props) {
           <Button
             className='w-full'
             onClick={handleSubmit}
-            disabled={loading || !selectedFile || !deviceId}
+            disabled={
+              loading ||
+              !selectedFile 
+            }
           >
             {loading ? (
               'Uploading...'
@@ -116,6 +193,7 @@ export function DeviceFileUpload({ apiKey }: Props) {
             )}
           </Button>
 
+          {/* Response */}
           {response && (
             <div className='space-y-4'>
               {response.code === 0 ? (
@@ -124,6 +202,8 @@ export function DeviceFileUpload({ apiKey }: Props) {
                     <p className='font-medium text-green-600'>
                       File uploaded successfully!
                     </p>
+                    <p>File ID: {response.data.fid}</p>
+                    <p>Request ID: {response.request_id}</p>
                   </AlertDescription>
                 </Alert>
               ) : (
