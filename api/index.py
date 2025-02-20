@@ -27,7 +27,7 @@ def generate_token(user_id,access_key):
     version = '2022-05-01'
     res = 'userid/%s' % user_id
     # User-defined token expiration time
-    et = '1739948805'
+    et = str(int(time.time()) + 3600)
     # Signature method, MD5, SHA1, SHA256 are supported
     method = 'md5'
     # Decode the access_key

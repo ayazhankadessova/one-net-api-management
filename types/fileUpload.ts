@@ -1,7 +1,9 @@
 // types/fileUpload.ts
 export interface FileUploadRequest {
-  did: string
+  product_id: string;
+  device_name: string;
   file: File
+  imei?: string
 }
 
 export interface FileUploadResponse {

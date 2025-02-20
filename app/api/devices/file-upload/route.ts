@@ -1,27 +1,32 @@
 // app/api/devices/file-upload/route.ts
 import { NextRequest } from 'next/server'
+import { generateToken } from '@/lib/token'
 
 export async function POST(request: NextRequest) {
   try {
+
+    const userId = '292608' // Your user ID
+    const accessKey =
+      'Hu7wiQmlo6FQIeRtU7w/KNQmBEnHg/RZ1pMEkCKbv11MfQxln6qYMq4BJi6vgdaWHFdI5HB6WovnN+1imDuP2w=='
+
+    // Generate token using the utility function
+    const token = await generateToken(userId, accessKey)
+    console.log(token)
     const formData = await request.formData()
-    const apiKey = request.headers.get('api-key')
 
-    if (!apiKey) {
-      return Response.json({ error: 'API key is required' }, { status: 401 })
-    }
-
-    // Forward the request to OneNET
     const response = await fetch(
       'https://www.onenet.hk.chinamobile.com:2616/device/file-upload',
       {
         method: 'POST',
         headers: {
-          'api-key': apiKey,
+          Authorization: token,
         },
         body: formData,
       }
     )
 
+    console.log(response)
+  
     const data = await response.json()
     console.log(data)
     return Response.json(data)

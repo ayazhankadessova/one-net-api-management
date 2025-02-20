@@ -16,6 +16,7 @@ import { QueryDatastreamsForm } from '@/components/query-datastreams'
 import { DeviceDataVisualization } from '@/components/device-data-visualization'
 import { QueryDevicesForm } from '@/components/query-device-details'
 import { FileSpaceInfo } from '@/components/file-space-info'
+import {DeviceFileUpload} from '@/components/device-file-upload'
 
 interface ApiConfig {
   version: 'v1' | 'v2'
@@ -130,6 +131,8 @@ export default function Home() {
       case 'details':
         return <QueryDevicesForm auth={auth} />
       case 'upload':
+        return <DeviceFileUpload auth={auth} /> 
+      case 'space':
         return <FileSpaceInfo auth={auth} />
       default:
         return null
