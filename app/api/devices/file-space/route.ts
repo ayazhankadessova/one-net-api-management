@@ -1,35 +1,26 @@
 // app/api/devices/file-space/route.ts
-import { generateAuthorization } from '@/lib/auth'
+import { generateToken } from '@/lib/token'
 
 export async function GET() {
   try {
-    const accessKey = '84/fp/v9n4XNT48ndy1DU6HveauHJaltgf/TgU8Nocs=' // Your access key
-    const et = 3600 * 1000
+    const userId = '292608' // Your user ID
+    const accessKey = 'Hu7wiQmlo6FQIeRtU7w/KNQmBEnHg/RZ1pMEkCKbv11MfQxln6qYMq4BJi6vgdaWHFdI5HB6WovnN+1imDuP2w=='
 
-    // // Generate authorization token
-    // const authorization = generateAuthorization(
-    //   'sha1',
-    //   'userid/292608',
-    //   accessKey,
-    //   et
-    // )
-    //     "authorization": "version=2022-05-01&res=userid%2F292608&et=1739782149&method=sha1&sign=dzKtFRxxBLhXiaNDmQXNsjhAU4U%3D"
-    // "authorization": "version=2022-05-01&res=userid%2F292608&et=1739782149&method=sha1&sign=dzKtFRxxBLhXiaNDmQXNsjhAU4U%3D"
+    // Generate token using the utility function
+    const token = await generateToken(userId, accessKey)
+    console.log(token)
 
-    // Make request to OneNET
     const response = await fetch(
       'https://www.onenet.hk.chinamobile.com:2616/device/file-space',
       {
         method: 'GET',
         headers: {
-          Authorization:
-            'version=2022-05-01&res=userid%2F292608&et=1739786450&method=sha1&sign=Nbxm7%2B9PKR3kONZrGDX9Z7in%2Fqk%3D',
+          Authorization: token,
         },
       }
     )
 
     const data = await response.json()
-
     if (!response.ok) {
       return Response.json(
         {

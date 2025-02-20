@@ -1,4 +1,5 @@
 'use client'
+
 import { useState } from 'react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
@@ -6,26 +7,48 @@ import { Label } from '@/components/ui/label'
 import { Alert, AlertDescription } from '@/components/ui/alert'
 import { AlertCircle } from 'lucide-react'
 import { Button } from '@/components/ui/button'
+import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group'
+import { generateToken } from '@/lib/token'
 import { useDevices } from '@/contexts/DevicesContext'
 import { NewEquipmentSelector } from '@/components/new-equipment'
 import { UpdateEquipmentForm } from '@/components/update-equipment-form'
 import { QueryDatastreamsForm } from '@/components/query-datastreams'
-import { DeviceDataVisualization } from '@/components/device-data-visualization' 
-import { QueryDevicesForm } from '@/components/query-device-details' 
-import { DeviceFileUpload } from '@/components/device-file-upload'
-import {FileSpaceInfo} from '@/components/file-space-info'
+import { DeviceDataVisualization } from '@/components/device-data-visualization'
+import { QueryDevicesForm } from '@/components/query-device-details'
+import { FileSpaceInfo } from '@/components/file-space-info'
+
+interface ApiConfig {
+  version: 'v1' | 'v2'
+  apiKey?: string
+  userId?: string
+  accessKey?: string
+  token?: string
+}
+
+export type AuthProps = {
+  version: 'v1' | 'v2'
+  apiKey?: string
+  token?: string
+}
 
 export default function Home() {
-  const [apiKey, setApiKey] = useState(
-    'R1kwRk5tdXlSRXVXTkVGdjBYeU83UEhTWmlaVjNNRWs='
-  )
+  const [apiConfig, setApiConfig] = useState<ApiConfig>({
+    version: 'v1',
+    apiKey: '',
+  })
   const [loading, setLoading] = useState(false)
   const [selectedAction, setSelectedAction] = useState<string | null>(null)
   const { setDevices, devices } = useDevices()
-  // length of devices
+
+  const generateAuthToken = () => {
+    if (apiConfig.userId && apiConfig.accessKey) {
+      const token = generateToken(apiConfig.userId, apiConfig.accessKey)
+      setApiConfig((prev) => ({ ...prev, token }))
+    }
+  }
 
   const fetchDevices = async () => {
-    if (!apiKey) return
+    if (!apiConfig.apiKey && !apiConfig.token) return
 
     setLoading(true)
     try {
@@ -33,16 +56,17 @@ export default function Home() {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'api-key': apiKey,
+          ...(apiConfig.version === 'v1'
+            ? { 'api-key': apiConfig.apiKey }
+            : { Authorization: apiConfig.token }),
         },
         body: JSON.stringify({
-          per_page: 100, // Get maximum devices
+          per_page: 100,
           page: 1,
         }),
       })
 
       const data = await response.json()
-      console.log(data)
       if (data.errno === 0) {
         setDevices(data.data.devices)
       }
@@ -79,30 +103,44 @@ export default function Home() {
       title: 'Upload File',
       description: 'Upload device-related files',
     },
+    {
+      id: 'space',
+      title: 'Storage Space',
+      description: 'View file storage information',
+    },
   ]
 
   const renderSelectedComponent = () => {
+    const auth: AuthProps = {
+      version: apiConfig.version,
+      ...(apiConfig.version === 'v1'
+        ? { apiKey: apiConfig.apiKey }
+        : { token: apiConfig.token }),
+    }
+
     switch (selectedAction) {
       case 'new':
-        return <NewEquipmentSelector apiKey={apiKey} />
+        return <NewEquipmentSelector auth={auth} />
       case 'update':
-        return <UpdateEquipmentForm apiKey={apiKey} />
+        return <UpdateEquipmentForm auth={auth} />
       case 'query':
-        return <QueryDatastreamsForm apiKey={apiKey} />
+        return <QueryDatastreamsForm auth={auth} />
       case 'data':
-        return <DeviceDataVisualization apiKey={apiKey} />
+        return <DeviceDataVisualization auth={auth} />
       case 'details':
-        return <QueryDevicesForm apiKey={apiKey} />
+        return <QueryDevicesForm auth={auth} />
       case 'upload':
-        return <FileSpaceInfo />
+        return <FileSpaceInfo auth={auth} />
       default:
         return null
     }
   }
 
+  const isAuthValid =
+    apiConfig.version === 'v1' ? !!apiConfig.apiKey : !!apiConfig.token
+
   return (
     <div className='container mx-auto p-20 space-y-6'>
-      {/* API Key Card */}
       <Card>
         <CardHeader>
           <CardTitle>OneNET Equipment Management</CardTitle>
@@ -110,42 +148,118 @@ export default function Home() {
         <CardContent>
           <div className='space-y-4'>
             <div className='space-y-2'>
-              <Label htmlFor='api-key'>API Key</Label>
-              <div className='flex gap-2'>
-                <Input
-                  id='api-key'
-                  type='password'
-                  value={apiKey}
-                  onChange={(e) => setApiKey(e.target.value)}
-                  placeholder='Enter your API key'
-                />
-                <Button onClick={fetchDevices} disabled={!apiKey || loading}>
-                  {loading ? 'Getting Devices...' : 'Get Devices'}
-                </Button>
-              </div>
+              <Label>API Version</Label>
+              <RadioGroup
+                value={apiConfig.version}
+                onValueChange={(value: 'v1' | 'v2') => {
+                  setApiConfig({ version: value })
+                }}
+                className='flex space-x-4'
+              >
+                <div className='flex items-center space-x-2'>
+                  <RadioGroupItem value='v1' id='v1' />
+                  <Label htmlFor='v1'>Legacy Version</Label>
+                </div>
+                <div className='flex items-center space-x-2'>
+                  <RadioGroupItem value='v2' id='v2' />
+                  <Label htmlFor='v2'>New Version (2024)</Label>
+                </div>
+              </RadioGroup>
             </div>
 
-            {/* {devices.length > 0 && (
+            {apiConfig.version === 'v1' ? (
+              <div className='space-y-2'>
+                <Label htmlFor='api-key'>API Key</Label>
+                <div className='flex gap-2'>
+                  <Input
+                    id='api-key'
+                    type='password'
+                    value={apiConfig.apiKey}
+                    onChange={(e) =>
+                      setApiConfig((prev) => ({
+                        ...prev,
+                        apiKey: e.target.value,
+                      }))
+                    }
+                    placeholder='Enter your API key'
+                  />
+                  <Button
+                    onClick={fetchDevices}
+                    disabled={!apiConfig.apiKey || loading}
+                  >
+                    {loading ? 'Getting Devices...' : 'Get Devices'}
+                  </Button>
+                </div>
+              </div>
+            ) : (
+              <div className='space-y-4'>
+                <div className='space-y-2'>
+                  <Label htmlFor='user-id'>User ID</Label>
+                  <Input
+                    id='user-id'
+                    value={apiConfig.userId}
+                    onChange={(e) =>
+                      setApiConfig((prev) => ({
+                        ...prev,
+                        userId: e.target.value,
+                      }))
+                    }
+                    placeholder='Enter your user ID'
+                  />
+                </div>
+                <div className='space-y-2'>
+                  <Label htmlFor='access-key'>Access Key</Label>
+                  <Input
+                    id='access-key'
+                    type='password'
+                    value={apiConfig.accessKey}
+                    onChange={(e) =>
+                      setApiConfig((prev) => ({
+                        ...prev,
+                        accessKey: e.target.value,
+                      }))
+                    }
+                    placeholder='Enter your access key'
+                  />
+                </div>
+                <Button
+                  onClick={generateAuthToken}
+                  disabled={!apiConfig.userId || !apiConfig.accessKey}
+                >
+                  Generate Token
+                </Button>
+                {apiConfig.token && (
+                  <Alert>
+                    <AlertDescription className='font-mono text-xs break-all'>
+                      {apiConfig.token}
+                    </AlertDescription>
+                  </Alert>
+                )}
+              </div>
+            )}
+
+            {apiConfig.version === "v1" && devices.length > 0 && (
               <Alert>
                 <AlertDescription className='text-sm text-muted-foreground'>
-                  Found {devices.length} devices for this API key
+                  Found {devices.length} devices
                 </AlertDescription>
               </Alert>
-            )} */}
+            )}
           </div>
         </CardContent>
       </Card>
 
-      {!apiKey && (
+      {!isAuthValid && (
         <Alert variant='destructive'>
           <AlertCircle className='h-4 w-4' />
           <AlertDescription>
-            Please enter an API key to make requests
+            {apiConfig.version === 'v1'
+              ? 'Please enter an API key to make requests'
+              : 'Please generate a token to make requests'}
           </AlertDescription>
         </Alert>
       )}
 
-      {/* Actions Grid */}
       {!selectedAction ? (
         <div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4'>
           {actions.map((action) => (
