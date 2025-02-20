@@ -1,26 +1,40 @@
 // app/api/devices/file-space/route.ts
-import { generateToken } from '@/lib/token'
+import { headers } from 'next/headers'
 
 export async function GET() {
   try {
-    const userId = '292608' // Your user ID
-    const accessKey = 'Hu7wiQmlo6FQIeRtU7w/KNQmBEnHg/RZ1pMEkCKbv11MfQxln6qYMq4BJi6vgdaWHFdI5HB6WovnN+1imDuP2w=='
+    const headersList = await headers()
+    const token = headersList.get('authorization')
+    const apiKey = headersList.get('api-key')
 
-    // Generate token using the utility function
-    const token = await generateToken(userId, accessKey)
-    console.log(token)
+    if (!token && !apiKey) {
+      return Response.json(
+        {
+          code: 401,
+          msg: 'Authentication required!',
+          request_id: '',
+          data: null,
+        },
+        { status: 401 }
+      )
+    }
+
+    const authHeaders = token
+      ? { Authorization: token }
+      : apiKey
+      ? { 'api-key': apiKey }
+      : {}
 
     const response = await fetch(
       'https://www.onenet.hk.chinamobile.com:2616/device/file-space',
       {
         method: 'GET',
-        headers: {
-          Authorization: token,
-        },
+        headers: authHeaders,
       }
     )
 
     const data = await response.json()
+
     if (!response.ok) {
       return Response.json(
         {

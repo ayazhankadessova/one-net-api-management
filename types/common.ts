@@ -12,3 +12,9 @@ export interface ApiResponse {
     device_id?: string
   }
 }
+
+export type AuthProps = {
+  version: 'v1' | 'v2'
+  apiKey?: string
+  token?: string
+}

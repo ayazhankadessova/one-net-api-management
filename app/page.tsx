@@ -16,19 +16,14 @@ import { QueryDatastreamsForm } from '@/components/query-datastreams'
 import { DeviceDataVisualization } from '@/components/device-data-visualization'
 import { QueryDevicesForm } from '@/components/query-device-details'
 import { FileSpaceInfo } from '@/components/file-space-info'
-import {DeviceFileUpload} from '@/components/device-file-upload'
+import { DeviceFileUpload } from '@/components/device-file-upload'
+import { AuthProps } from '@/types/common'
 
 interface ApiConfig {
   version: 'v1' | 'v2'
   apiKey?: string
   userId?: string
   accessKey?: string
-  token?: string
-}
-
-export type AuthProps = {
-  version: 'v1' | 'v2'
-  apiKey?: string
   token?: string
 }
 
@@ -43,13 +38,14 @@ export default function Home() {
 
   const generateAuthToken = () => {
     if (apiConfig.userId && apiConfig.accessKey) {
-      const token = generateToken(apiConfig.userId, apiConfig.accessKey)
-      setApiConfig((prev) => ({ ...prev, token }))
+      generateToken(apiConfig.userId, apiConfig.accessKey).then((token) => {
+        setApiConfig((prev) => ({ ...prev, token }))
+      })
     }
   }
 
   const fetchDevices = async () => {
-    if (!apiConfig.apiKey && !apiConfig.token) return
+    if (!apiConfig.apiKey) return
 
     setLoading(true)
     try {
@@ -57,9 +53,7 @@ export default function Home() {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          ...(apiConfig.version === 'v1'
-            ? { 'api-key': apiConfig.apiKey }
-            : { Authorization: apiConfig.token }),
+          'api-key': apiConfig.apiKey,
         },
         body: JSON.stringify({
           per_page: 100,
@@ -131,7 +125,7 @@ export default function Home() {
       case 'details':
         return <QueryDevicesForm auth={auth} />
       case 'upload':
-        return <DeviceFileUpload auth={auth} /> 
+        return <DeviceFileUpload auth={auth} />
       case 'space':
         return <FileSpaceInfo auth={auth} />
       default:
@@ -241,7 +235,7 @@ export default function Home() {
               </div>
             )}
 
-            {apiConfig.version === "v1" && devices.length > 0 && (
+            {apiConfig.version === 'v1' && devices.length > 0 && (
               <Alert>
                 <AlertDescription className='text-sm text-muted-foreground'>
                   Found {devices.length} devices

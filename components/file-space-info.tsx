@@ -1,11 +1,10 @@
-// components/file-space-info.tsx
 'use client'
-
-import React, { useState} from 'react'
+import React, { useState } from 'react'
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card'
 import { Alert, AlertDescription } from '@/components/ui/alert'
 import { AlertCircle } from 'lucide-react'
 import { Button } from '@/components/ui/button'
+import { AuthProps } from '@/types/common'
 
 interface FileSpaceResponse {
   code: number
@@ -18,18 +17,40 @@ interface FileSpaceResponse {
   } | null
 }
 
-export function FileSpaceInfo() {
+export function FileSpaceInfo({ auth }: { auth: AuthProps }) {
+  const { version, token, apiKey } = auth
   const [loading, setLoading] = useState(false)
   const [data, setData] = useState<FileSpaceResponse | null>(null)
 
   const fetchFileSpace = async () => {
     setLoading(true)
     try {
-      const response = await fetch('/api/devices/file-space')
+      // Construct headers based on version and available credentials
+      const headers: Record<string, string> = {}
+      if (version === 'v2' && token) {
+        headers.Authorization = token
+      } else if (version === 'v1' && apiKey) {
+        headers['api-key'] = apiKey
+      }
+
+      const response = await fetch('/api/devices/file-space', {
+        headers,
+      })
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`)
+      }
+
       const data = await response.json()
       setData(data)
     } catch (error) {
       console.error('Error fetching file space:', error)
+      setData({
+        code: 500,
+        msg: error instanceof Error ? error.message : 'An error occurred',
+        request_id: '',
+        data: null,
+      })
     }
     setLoading(false)
   }
@@ -44,7 +65,6 @@ export function FileSpaceInfo() {
           <Button onClick={fetchFileSpace} disabled={loading}>
             {loading ? 'Loading...' : 'Refresh Storage Info'}
           </Button>
-
           {data && (
             <>
               {data.code === 0 && data.data ? (
@@ -75,8 +95,6 @@ export function FileSpaceInfo() {
                       </p>
                     </div>
                   </div>
-
-                  {/* Progress bar */}
                   <div className='w-full bg-slate-200 rounded-full h-2.5'>
                     <div
                       className='bg-blue-600 h-2.5 rounded-full'

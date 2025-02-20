@@ -136,20 +136,6 @@ export function DeviceFileUpload({ apiKey }: Props) {
               />
             </div>
 
-            {/* <div className='space-y-2'>
-              <FieldLabel
-                label='IMEI'
-                description='IMEI (required if Product ID and Device Name not provided)'
-              />
-              <Input
-                value={formData.imei}
-                onChange={(e) =>
-                  setFormData((prev) => ({ ...prev, imei: e.target.value }))
-                }
-                placeholder='Enter IMEI'
-              />
-            </div> */}
-
             {/* File Upload */}
             <div className='space-y-2'>
               <FieldLabel
