@@ -90,7 +90,7 @@ export default function Home() {
     },
     {
       id: 'details',
-      title: 'Device Details',
+      title: 'Batch Query Device Details',
       description: 'Query device information',
     },
     {

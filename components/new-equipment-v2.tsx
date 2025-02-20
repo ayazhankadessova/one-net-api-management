@@ -71,58 +71,6 @@ export function NewEquipmentFormV2({ apiKey }: Props) {
   const [formData, setFormData] =
     useState<NewEquipmentV2Request>(initialFormData)
 
-  // Add state for validation messages
-//   const [errors, setErrors] = useState({
-//     device_name: '',
-//     imei: '',
-//     imsi: '',
-//     psk: '',
-//     auth_code: '',
-//   })
-
-  // Update validation function
-//   const validateForm = () => {
-//     const newErrors = {
-//       device_name: '',
-//       imei: '',
-//       imsi: '',
-//       psk: '',
-//       auth_code: '',
-//     }
-
-//     // Device name validation
-//     if (!formData.device_name) {
-//       newErrors.device_name = 'Device name is required'
-//     } else if (!/^[a-zA-Z0-9-_]{1,64}$/.test(formData.device_name)) {
-//       newErrors.device_name =
-//         'Device name must contain only letters, numbers, dashes, and underscores'
-//     }
-
-//     // IMEI validation
-//     if (formData.imei && !/^\d{15}$/.test(formData.imei)) {
-//       newErrors.imei = 'IMEI must be exactly 15 digits'
-//     }
-
-//     // IMSI validation
-//     if (formData.imsi && !/^\d{1,15}$/.test(formData.imsi)) {
-//       newErrors.imsi = 'IMSI must be 1-15 digits'
-//     }
-
-//     // PSK validation
-//     if (formData.psk && !/^[a-zA-Z0-9]{8,16}$/.test(formData.psk)) {
-//       newErrors.psk = 'PSK must be 8-16 characters (letters and numbers only)'
-//     }
-
-//     // Auth code validation
-//     if (formData.auth_code && !/^[a-zA-Z0-9]{1,16}$/.test(formData.auth_code)) {
-//       newErrors.auth_code =
-//         'Auth code must be 1-16 characters (letters and numbers only)'
-//     }
-
-//     setErrors(newErrors)
-//     return Object.values(newErrors).every((error) => !error)
-//   }
-
   const isFormValid = () => {
     // Device name validation: letters, digits, dashes-, and underscores _
     const deviceNameRegex = /^[a-zA-Z0-9-_]{1,64}$/
