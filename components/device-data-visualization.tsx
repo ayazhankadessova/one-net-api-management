@@ -29,12 +29,10 @@ import { format } from 'date-fns'
 import { DeviceDataRequest, DeviceDataResponse } from '@/types/deviceData'
 import { DeviceSelector } from '@/components/device-selector'
 import { format as formatDate } from 'date-fns'
+import { AuthProps } from '@/types/common'
 
-interface Props {
-  apiKey: string
-}
-
-export function DeviceDataVisualization({ apiKey }: Props) {
+export function DeviceDataVisualization({ auth }: { auth: AuthProps }) {
+  const { version, apiKey } = auth
   const [loading, setLoading] = useState(false)
   const [response, setResponse] = useState<DeviceDataResponse | null>(null)
   const [deviceId, setDeviceId] = useState('')
@@ -115,9 +113,7 @@ export function DeviceDataVisualization({ apiKey }: Props) {
       const response = await fetch(
         `/api/devices/${deviceId}/datapoints?${params.toString()}`,
         {
-          headers: {
-            'api-key': apiKey,
-          },
+          headers: apiKey ? { 'api-key': apiKey } : {},
         }
       )
       const data = await response.json()
@@ -220,148 +216,162 @@ export function DeviceDataVisualization({ apiKey }: Props) {
         <CardTitle>Device Historical Data</CardTitle>
       </CardHeader>
       <CardContent>
-        <div className='space-y-6'>
-          {/* Device ID */}
-          <div className='space-y-2'>
-            <FieldLabel
-              label='Device ID'
-              required
-              description='The device ID to query'
-            />
-
-            <DeviceSelector
-              value={deviceId}
-              onValueChange={(value) => setDeviceId(value)}
-            />
-          </div>
-
-          <Separator />
-
-          {/* Query Parameters */}
+        {version == 'v2' ? (
           <div className='space-y-4'>
-            <h3 className='font-medium'>Query Parameters</h3>
-
-            <div className='space-y-2'>
-              <FieldLabel
-                label='Datastream ID'
-                description='Data stream ID, separate multiple IDs with commas'
-              />
-              <Input
-                value={formData.datastream_id}
-                onChange={(e) =>
-                  setFormData((prev) => ({
-                    ...prev,
-                    datastream_id: e.target.value,
-                  }))
-                }
-                placeholder='e.g. ds1,ds2'
-              />
-            </div>
-
-            <div className='grid grid-cols-2 gap-4'>
-              <div className='space-y-2'>
-                <FieldLabel
-                  label='Start Time'
-                  description='Format: YYYY-MM-DDTHH:mm:ss'
-                />
-                <Input
-                  type='datetime-local'
-                  value={formData.start}
-                  onChange={(e) =>
-                    setFormData((prev) => ({ ...prev, start: e.target.value }))
-                  }
-                />
-              </div>
-              <div className='space-y-2'>
-                <FieldLabel
-                  label='End Time'
-                  description='Format: YYYY-MM-DDTHH:mm:ss'
-                />
-                <Input
-                  type='datetime-local'
-                  value={formData.end}
-                  onChange={(e) =>
-                    setFormData((prev) => ({ ...prev, end: e.target.value }))
-                  }
-                />
-              </div>
-            </div>
-
-            <div className='space-y-2'>
-              <FieldLabel
-                label='Limit'
-                description='Maximum number of data points (0-6000)'
-              />
-              <Input
-                type='number'
-                min='0'
-                max='6000'
-                value={formData.limit}
-                onChange={(e) =>
-                  setFormData((prev) => ({
-                    ...prev,
-                    limit: parseInt(e.target.value),
-                  }))
-                }
-              />
-            </div>
+            <Alert variant='destructive'>
+              <AlertCircle className='h-4 w-4' />
+              <AlertDescription>
+                {'This service is not supported by new version yet.'}
+              </AlertDescription>
+            </Alert>
           </div>
+        ) : (
+          <div className='space-y-6'>
+            {/* Device ID */}
+            <div className='space-y-2'>
+              <FieldLabel
+                label='Device ID'
+                required
+                description='The device ID to query'
+              />
 
-          <Button
-            className='w-full'
-            onClick={fetchData}
-            disabled={loading || !deviceId || !apiKey}
-          >
-            {loading ? 'Fetching Data...' : 'Fetch Data'}
-          </Button>
-
-          {/* Results */}
-          {response && (
-            <div className='space-y-4'>
-              {response.errno === 0 ? (
-                <>
-                  {/* Add download button at the top of results */}
-                  {response.data.datastreams.length > 0 && (
-                    <Button
-                      variant='outline'
-                      onClick={downloadAsCSV}
-                      className='w-full'
-                    >
-                      Save as CSV
-                    </Button>
-                  )}
-
-                  {response.data.datastreams.map((datastream) => (
-                    <div key={datastream.id} className='space-y-4'>
-                      <h4 className='font-medium'>
-                        Datastream: {datastream.id}
-                      </h4>
-                      {renderVisualization(datastream)}
-                    </div>
-                  ))}
-                  {response.data.cursor && (
-                    <Button
-                      variant='outline'
-                      onClick={() =>
-                        setFormData((prev) => ({
-                          ...prev,
-                          cursor: response.data.cursor,
-                        }))
-                      }
-                    >
-                      Load More
-                    </Button>
-                  )}
-                </>
-              ) : (
-                <Alert variant='destructive'>
-                  <AlertCircle className='h-4 w-4' />
-                  <AlertDescription>{response.error}</AlertDescription>
-                </Alert>
-              )}
+              <DeviceSelector
+                value={deviceId}
+                onValueChange={(value) => setDeviceId(value)}
+              />
             </div>
-          )}
-        </div>
+
+            <Separator />
+
+            {/* Query Parameters */}
+            <div className='space-y-4'>
+              <h3 className='font-medium'>Query Parameters</h3>
+
+              <div className='space-y-2'>
+                <FieldLabel
+                  label='Datastream ID'
+                  description='Data stream ID, separate multiple IDs with commas'
+                />
+                <Input
+                  value={formData.datastream_id}
+                  onChange={(e) =>
+                    setFormData((prev) => ({
+                      ...prev,
+                      datastream_id: e.target.value,
+                    }))
+                  }
+                  placeholder='e.g. ds1,ds2'
+                />
+              </div>
+
+              <div className='grid grid-cols-2 gap-4'>
+                <div className='space-y-2'>
+                  <FieldLabel
+                    label='Start Time'
+                    description='Format: YYYY-MM-DDTHH:mm:ss'
+                  />
+                  <Input
+                    type='datetime-local'
+                    value={formData.start}
+                    onChange={(e) =>
+                      setFormData((prev) => ({
+                        ...prev,
+                        start: e.target.value,
+                      }))
+                    }
+                  />
+                </div>
+                <div className='space-y-2'>
+                  <FieldLabel
+                    label='End Time'
+                    description='Format: YYYY-MM-DDTHH:mm:ss'
+                  />
+                  <Input
+                    type='datetime-local'
+                    value={formData.end}
+                    onChange={(e) =>
+                      setFormData((prev) => ({ ...prev, end: e.target.value }))
+                    }
+                  />
+                </div>
+              </div>
+
+              <div className='space-y-2'>
+                <FieldLabel
+                  label='Limit'
+                  description='Maximum number of data points (0-6000)'
+                />
+                <Input
+                  type='number'
+                  min='0'
+                  max='6000'
+                  value={formData.limit}
+                  onChange={(e) =>
+                    setFormData((prev) => ({
+                      ...prev,
+                      limit: parseInt(e.target.value),
+                    }))
+                  }
+                />
+              </div>
+            </div>
+
+            <Button
+              className='w-full'
+              onClick={fetchData}
+              disabled={loading || !deviceId || !apiKey}
+            >
+              {loading ? 'Fetching Data...' : 'Fetch Data'}
+            </Button>
+
+            {/* Results */}
+            {response && (
+              <div className='space-y-4'>
+                {response.errno === 0 ? (
+                  <>
+                    {/* Add download button at the top of results */}
+                    {response.data.datastreams.length > 0 && (
+                      <Button
+                        variant='outline'
+                        onClick={downloadAsCSV}
+                        className='w-full'
+                      >
+                        Save as CSV
+                      </Button>
+                    )}
+
+                    {response.data.datastreams.map((datastream) => (
+                      <div key={datastream.id} className='space-y-4'>
+                        <h4 className='font-medium'>
+                          Datastream: {datastream.id}
+                        </h4>
+                        {renderVisualization(datastream)}
+                      </div>
+                    ))}
+                    {response.data.cursor && (
+                      <Button
+                        variant='outline'
+                        onClick={() =>
+                          setFormData((prev) => ({
+                            ...prev,
+                            cursor: response.data.cursor,
+                          }))
+                        }
+                      >
+                        Load More
+                      </Button>
+                    )}
+                  </>
+                ) : (
+                  <Alert variant='destructive'>
+                    <AlertCircle className='h-4 w-4' />
+                    <AlertDescription>{response.error}</AlertDescription>
+                  </Alert>
+                )}
+              </div>
+            )}
+          </div>
+        )}
       </CardContent>
     </Card>
   )
