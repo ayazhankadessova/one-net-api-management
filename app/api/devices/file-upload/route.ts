@@ -1,17 +1,25 @@
 // app/api/devices/file-upload/route.ts
 import { NextRequest } from 'next/server'
-import { generateToken } from '@/lib/token'
+import { headers } from 'next/headers'
 
 export async function POST(request: NextRequest) {
   try {
+    // Get authorization token from request headers
+    const headersList = await headers()
+    const token = headersList.get('authorization')
 
-    const userId = '292608' // Your user ID
-    const accessKey =
-      'Hu7wiQmlo6FQIeRtU7w/KNQmBEnHg/RZ1pMEkCKbv11MfQxln6qYMq4BJi6vgdaWHFdI5HB6WovnN+1imDuP2w=='
+    if (!token) {
+      return Response.json(
+        {
+          code: 401,
+          msg: 'Authentication required!',
+          request_id: '',
+          data: { fid: '' },
+        },
+        { status: 401 }
+      )
+    }
 
-    // Generate token using the utility function
-    const token = await generateToken(userId, accessKey)
-    console.log(token)
     const formData = await request.formData()
 
     const response = await fetch(
@@ -25,12 +33,22 @@ export async function POST(request: NextRequest) {
       }
     )
 
-    console.log(response)
-  
     const data = await response.json()
-    console.log(data)
+    if (!response.ok) {
+      return Response.json(
+        {
+          code: data.code || response.status,
+          msg: data.msg || 'Request failed',
+          request_id: data.request_id || '',
+          data: { fid: '' },
+        },
+        { status: response.status }
+      )
+    }
+
     return Response.json(data)
   } catch (error) {
+    console.error('Error in file upload:', error)
     return Response.json(
       {
         code: -1,

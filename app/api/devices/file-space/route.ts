@@ -19,11 +19,13 @@ export async function GET() {
       )
     }
 
-    const authHeaders = token
-      ? { Authorization: token }
-      : apiKey
-      ? { 'api-key': apiKey }
-      : {}
+    const authHeaders: Record<string, string> = {}
+    if (token) {
+      authHeaders['Authorization'] = token
+    }
+    if (apiKey) {
+      authHeaders['api-key'] = apiKey
+    }
 
     const response = await fetch(
       'https://www.onenet.hk.chinamobile.com:2616/device/file-space',

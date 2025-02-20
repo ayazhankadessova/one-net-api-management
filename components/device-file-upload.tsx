@@ -9,19 +9,17 @@ import { Alert, AlertDescription } from '@/components/ui/alert'
 import { AlertCircle, Upload } from 'lucide-react'
 import { FieldLabel } from '@/components/field-label'
 import { FileUploadRequest, FileUploadResponse } from '@/types/fileUpload'
+import { AuthProps } from '@/types/common'
 
-interface Props {
-  apiKey: string
-}
-
-export function DeviceFileUpload({ apiKey }: Props) {
+export function DeviceFileUpload({ auth }: { auth: AuthProps }) {
+  const { version, token} = auth
   const [loading, setLoading] = useState(false)
   const [response, setResponse] = useState<FileUploadResponse | null>(null)
   const [selectedFile, setSelectedFile] = useState<File | null>(null)
   const [formData, setFormData] = useState<Omit<FileUploadRequest, 'file'>>({
     product_id: '',
     device_name: '',
-    imei: undefined
+    imei: undefined,
   })
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -54,10 +52,7 @@ export function DeviceFileUpload({ apiKey }: Props) {
   }
 
   const handleSubmit = async () => {
-    if (
-      !selectedFile ||
-      (!formData.product_id && !formData.device_name)
-    ) {
+    if (!selectedFile || (!formData.product_id && !formData.device_name)) {
       alert(
         'Please provide a file and at least one identifier (Product ID, Device Name, or IMEI)'
       )
@@ -77,6 +72,9 @@ export function DeviceFileUpload({ apiKey }: Props) {
 
       const response = await fetch('/api/devices/file-upload', {
         method: 'POST',
+        headers: {
+          ...(version === 'v2' && token ? { Authorization: token } : {}),
+        },
         body: submitFormData,
       })
 
@@ -99,101 +97,109 @@ export function DeviceFileUpload({ apiKey }: Props) {
         <CardTitle>Upload Device File</CardTitle>
       </CardHeader>
       <CardContent>
-        <div className='space-y-6'>
-          {/* Device Identifiers */}
+        {version == 'v1' ? (
           <div className='space-y-4'>
-            <div className='space-y-2'>
-              <FieldLabel
-                label='Product ID'
-                description='Product ID (req)'
-              />
-              <Input
-                value={formData.product_id}
-                onChange={(e) =>
-                  setFormData((prev) => ({
-                    ...prev,
-                    product_id: e.target.value,
-                  }))
-                }
-                placeholder='Enter product ID'
-              />
-            </div>
-
-            <div className='space-y-2'>
-              <FieldLabel
-                label='Device Name'
-                description='Device Name (required if Product ID and IMEI not provided)'
-              />
-              <Input
-                value={formData.device_name}
-                onChange={(e) =>
-                  setFormData((prev) => ({
-                    ...prev,
-                    device_name: e.target.value,
-                  }))
-                }
-                placeholder='Enter Device Name'
-              />
-            </div>
-
-            {/* File Upload */}
-            <div className='space-y-2'>
-              <FieldLabel
-                label='File'
-                required
-                description='Supported formats: .jpg, .jpeg, .png, .bmp, .gif, .webp, .tiff, .txt (max 20MB)'
-              />
-              <div className='flex items-center gap-4'>
+            <Alert variant='destructive'>
+              <AlertCircle className='h-4 w-4' />
+              <AlertDescription>
+                {'This service is not supported by legacy version.'}
+              </AlertDescription>
+            </Alert>
+          </div>
+        ) : (
+          <div className='space-y-6'>
+            {/* Device Identifiers */}
+            <div className='space-y-4'>
+              <div className='space-y-2'>
+                <FieldLabel label='Product ID' description='Product ID (req)' />
                 <Input
-                  type='file'
-                  onChange={handleFileChange}
-                  accept='.jpg,.jpeg,.png,.bmp,.gif,.webp,.tiff,.txt'
+                  value={formData.product_id}
+                  onChange={(e) =>
+                    setFormData((prev) => ({
+                      ...prev,
+                      product_id: e.target.value,
+                    }))
+                  }
+                  placeholder='Enter product ID'
                 />
-                {selectedFile && (
-                  <span className='text-sm text-muted-foreground'>
-                    {selectedFile.name}
-                  </span>
-                )}
+              </div>
+
+              <div className='space-y-2'>
+                <FieldLabel
+                  label='Device Name'
+                  description='Device Name (required if Product ID and IMEI not provided)'
+                />
+                <Input
+                  value={formData.device_name}
+                  onChange={(e) =>
+                    setFormData((prev) => ({
+                      ...prev,
+                      device_name: e.target.value,
+                    }))
+                  }
+                  placeholder='Enter Device Name'
+                />
+              </div>
+
+              {/* File Upload */}
+              <div className='space-y-2'>
+                <FieldLabel
+                  label='File'
+                  required
+                  description='Supported formats: .jpg, .jpeg, .png, .bmp, .gif, .webp, .tiff, .txt (max 20MB)'
+                />
+                <div className='flex items-center gap-4'>
+                  <Input
+                    type='file'
+                    onChange={handleFileChange}
+                    accept='.jpg,.jpeg,.png,.bmp,.gif,.webp,.tiff,.txt'
+                  />
+                  {selectedFile && (
+                    <span className='text-sm text-muted-foreground'>
+                      {selectedFile.name}
+                    </span>
+                  )}
+                </div>
               </div>
             </div>
-          </div>
 
-          <Button
-            className='w-full'
-            onClick={handleSubmit}
-            disabled={loading || !selectedFile}
-          >
-            {loading ? (
-              'Uploading...'
-            ) : (
-              <>
-                <Upload className='mr-2 h-4 w-4' /> Upload File
-              </>
-            )}
-          </Button>
-
-          {/* Response */}
-          {response && (
-            <div className='space-y-4'>
-              {response.code === 0 ? (
-                <Alert>
-                  <AlertDescription className='space-y-2'>
-                    <p className='font-medium text-green-600'>
-                      File uploaded successfully!
-                    </p>
-                    <p>File ID: {response.data.fid}</p>
-                    <p>Request ID: {response.request_id}</p>
-                  </AlertDescription>
-                </Alert>
+            <Button
+              className='w-full'
+              onClick={handleSubmit}
+              disabled={loading || !selectedFile}
+            >
+              {loading ? (
+                'Uploading...'
               ) : (
-                <Alert variant='destructive'>
-                  <AlertCircle className='h-4 w-4' />
-                  <AlertDescription>{response.msg}</AlertDescription>
-                </Alert>
+                <>
+                  <Upload className='mr-2 h-4 w-4' /> Upload File
+                </>
               )}
-            </div>
-          )}
-        </div>
+            </Button>
+
+            {/* Response */}
+            {response && (
+              <div className='space-y-4'>
+                {response.code === 0 ? (
+                  <Alert>
+                    <AlertDescription className='space-y-2'>
+                      <p className='font-medium text-green-600'>
+                        File uploaded successfully!
+                      </p>
+                      <p>File ID: {response.data.fid}</p>
+                      <p>Request ID: {response.request_id}</p>
+                    </AlertDescription>
+                  </Alert>
+                ) : (
+                  <Alert variant='destructive'>
+                    <AlertCircle className='h-4 w-4' />
+                    <AlertDescription>{response.msg}</AlertDescription>
+                  </Alert>
+                )}
+              </div>
+            )}
+          </div>
+        )}
       </CardContent>
     </Card>
   )
