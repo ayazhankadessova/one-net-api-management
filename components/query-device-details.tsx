@@ -1,7 +1,7 @@
 // components/query-devices-form.tsx
 'use client'
 
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, useCallback } from 'react'
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
@@ -36,12 +36,6 @@ export function QueryDevicesForm({ auth }: { auth: AuthProps }) {
     page: 1,
   })
 
-  useEffect(() => {
-    if (formData.page) {
-      fetchData()
-    }
-  }, [formData.page])
-
   const handleDeviceIdsChange = (ids: string[]) => {
     setFormData((prev) => ({
       ...prev,
@@ -49,7 +43,7 @@ export function QueryDevicesForm({ auth }: { auth: AuthProps }) {
     }))
   }
 
-  const fetchData = async () => {
+  const fetchData = useCallback(async () => {
     setLoading(true)
     if (!apiKey) {
       setLoading(false)
@@ -74,7 +68,13 @@ export function QueryDevicesForm({ auth }: { auth: AuthProps }) {
       })
     }
     setLoading(false)
-  }
+  }, [apiKey, formData])
+
+   useEffect(() => {
+     if (formData.page) {
+       fetchData()
+     }
+   }, [fetchData, formData.page])
 
   return (
     <Card>

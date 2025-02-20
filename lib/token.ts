@@ -8,7 +8,7 @@ export async function generateToken(
   userId: string,
   accessKey: string
 ): Promise<string> {
-  const tokenResponse = await fetch('http://127.0.0.1:8000/api/py/token', {
+  const tokenResponse = await fetch('/api/py/token', {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
