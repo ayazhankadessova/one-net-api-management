@@ -1,3 +1,4 @@
+// components/file-space-info.tsx
 'use client'
 import React, { useState } from 'react'
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card'
@@ -6,14 +7,15 @@ import { AlertCircle } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { AuthProps } from '@/types/common'
 
+// Match the actual API response structure
 interface FileSpaceResponse {
   code: number
   msg: string
   request_id: string
   data: {
-    useSize: number
-    hasSize: number
-    totalSize: number
+    use_size: number // Changed from useSize
+    has_size: number // Changed from hasSize
+    total_size: number // Changed from totalSize
   } | null
 }
 
@@ -25,7 +27,6 @@ export function FileSpaceInfo({ auth }: { auth: AuthProps }) {
   const fetchFileSpace = async () => {
     setLoading(true)
     try {
-      // Construct headers based on version and available credentials
       const headers: Record<string, string> = {}
       if (version === 'v2' && token) {
         headers.Authorization = token
@@ -55,66 +56,80 @@ export function FileSpaceInfo({ auth }: { auth: AuthProps }) {
     setLoading(false)
   }
 
+  // Convert bytes to MB with 2 decimal places
+  const bytesToMB = (bytes: number) => (bytes / (1024 * 1024)).toFixed(2)
+
   return (
     <Card>
       <CardHeader>
         <CardTitle>File Storage Space</CardTitle>
       </CardHeader>
       <CardContent>
-        <div className='space-y-4'>
-          <Button onClick={fetchFileSpace} disabled={loading}>
-            {loading ? 'Loading...' : 'Refresh Storage Info'}
-          </Button>
-          {data && (
-            <>
-              {data.code === 0 && data.data ? (
-                <div className='space-y-2'>
-                  <div className='grid grid-cols-3 gap-4'>
-                    <div className='p-4 bg-slate-100 rounded-lg'>
-                      <p className='text-sm text-muted-foreground'>
-                        Used Space
-                      </p>
-                      <p className='text-2xl font-bold'>
-                        {data.data.useSize} MB
-                      </p>
+        {version == 'v1' ? (
+          <div className='space-y-4'>
+            <Alert variant='destructive'>
+              <AlertCircle className='h-4 w-4' />
+              <AlertDescription>
+                {'This service is not supported by legacy version.'}
+              </AlertDescription>
+            </Alert>
+          </div>
+        ) : (
+          <div className='space-y-4'>
+            <Button onClick={fetchFileSpace} disabled={loading}>
+              {loading ? 'Loading...' : 'Refresh Storage Info'}
+            </Button>
+            {data && (
+              <>
+                {data.code === 0 && data.data ? (
+                  <div className='space-y-2'>
+                    <div className='grid grid-cols-3 gap-4'>
+                      <div className='p-4 bg-slate-100 rounded-lg'>
+                        <p className='text-sm text-muted-foreground'>
+                          Used Space
+                        </p>
+                        <p className='text-2xl font-bold'>
+                          {bytesToMB(data.data.use_size)} MB
+                        </p>
+                      </div>
+                      <div className='p-4 bg-slate-100 rounded-lg'>
+                        <p className='text-sm text-muted-foreground'>
+                          Available Space
+                        </p>
+                        <p className='text-2xl font-bold'>
+                          {bytesToMB(data.data.has_size)} MB
+                        </p>
+                      </div>
+                      <div className='p-4 bg-slate-100 rounded-lg'>
+                        <p className='text-sm text-muted-foreground'>
+                          Total Space
+                        </p>
+                        <p className='text-2xl font-bold'>
+                          {bytesToMB(data.data.total_size)} MB
+                        </p>
+                      </div>
                     </div>
-                    <div className='p-4 bg-slate-100 rounded-lg'>
-                      <p className='text-sm text-muted-foreground'>
-                        Available Space
-                      </p>
-                      <p className='text-2xl font-bold'>
-                        {data.data.hasSize} MB
-                      </p>
-                    </div>
-                    <div className='p-4 bg-slate-100 rounded-lg'>
-                      <p className='text-sm text-muted-foreground'>
-                        Total Space
-                      </p>
-                      <p className='text-2xl font-bold'>
-                        {data.data.totalSize} MB
-                      </p>
+                    <div className='w-full bg-slate-200 rounded-full h-2.5'>
+                      <div
+                        className='bg-blue-600 h-2.5 rounded-full'
+                        style={{
+                          width: `${
+                            (data.data.use_size / data.data.total_size) * 100
+                          }%`,
+                        }}
+                      />
                     </div>
                   </div>
-                  <div className='w-full bg-slate-200 rounded-full h-2.5'>
-                    <div
-                      className='bg-blue-600 h-2.5 rounded-full'
-                      style={{
-                        width: `${
-                          (data.data.useSize / data.data.totalSize) * 100
-                        }%`,
-                      }}
-                    />
-                  </div>
-                </div>
-              ) : (
-                <Alert variant='destructive'>
-                  <AlertCircle className='h-4 w-4' />
-                  <AlertDescription>{data.msg}</AlertDescription>
-                </Alert>
-              )}
-            </>
-          )}
-        </div>
+                ) : (
+                  <Alert variant='destructive'>
+                    <AlertCircle className='h-4 w-4' />
+                    <AlertDescription>{data.msg}</AlertDescription>
+                  </Alert>
+                )}
+              </>
+            )}
+          </div>
+        )}
       </CardContent>
     </Card>
   )

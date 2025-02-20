@@ -37,6 +37,17 @@ export async function GET() {
 
     const data = await response.json()
 
+    // If the response includes a resp field that's a string, parse it
+    if (typeof data.resp === 'string') {
+      try {
+        const parsedResp = JSON.parse(data.resp)
+        return Response.json(parsedResp)
+      } catch (e) {
+        console.error('Error parsing resp:', e)
+      }
+    }
+
+    // If no resp field or parsing failed, return the data as is
     if (!response.ok) {
       return Response.json(
         {
