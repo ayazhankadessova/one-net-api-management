@@ -112,6 +112,7 @@ export function QueryDatastreamsForm({ auth }: { auth: AuthProps }) {
     setLoading(true)
     try {
       if (version === 'v1') {
+        // V1 handling remains the same
         let url = `/api/equipment?device_id=${formDataV1.device_id}`
         if (formDataV1.datastream_ids) {
           url += `&datastream_ids=${formDataV1.datastream_ids}`
@@ -123,30 +124,57 @@ export function QueryDatastreamsForm({ auth }: { auth: AuthProps }) {
         const data = await response.json()
         setResponse(data)
       } else {
-        // Build query string for V2
-        const params = new URLSearchParams({
-          product_id: formDataV2.product_id,
-          device_name: formDataV2.device_name,
-          ...(formDataV2.datastream_id && {
-            datastream_id: formDataV2.datastream_id,
-          }),
-          ...(formDataV2.imei && { imei: formDataV2.imei }),
-          ...(formDataV2.start && { start: formDataV2.start }),
-          ...(formDataV2.end && { end: formDataV2.end }),
-          ...(formDataV2.duration && {
-            duration: formDataV2.duration.toString(),
-          }),
-          limit: formDataV2.limit.toString(),
-          ...(formDataV2.cursor && { cursor: formDataV2.cursor }),
-          sort: formDataV2.sort,
-        })
+        // V2 handling with proper date formatting
+        const formatDate = (dateStr: string) => {
+          if (!dateStr) return ''
+          const date = new Date(dateStr)
+          return date.toISOString().slice(0, 19) // Format: YYYY-MM-DDThh:mm:ss
+        }
+
+        // Build query parameters
+        const params = new URLSearchParams()
+
+        // Required parameters
+        params.append('product_id', formDataV2.product_id)
+        params.append('device_name', formDataV2.device_name)
+
+        // Optional parameters
+        if (formDataV2.datastream_id) {
+          params.append('datastream_id', formDataV2.datastream_id)
+        }
+        if (formDataV2.imei) {
+          params.append('imei', formDataV2.imei)
+        }
+        if (formDataV2.start) {
+          params.append('start', formatDate(formDataV2.start))
+        }
+        if (formDataV2.end) {
+          params.append('end', formatDate(formDataV2.end))
+        }
+        if (formDataV2.duration) {
+          params.append('duration', formDataV2.duration.toString())
+        }
+
+        params.append('limit', formDataV2.limit.toString())
+        params.append('sort', formDataV2.sort)
+
+        if (formDataV2.cursor) {
+          params.append('cursor', formDataV2.cursor)
+        }
 
         const response = await fetch(
           `/api/datapoints/history?${params.toString()}`,
           {
-            headers: { Authorization: token || '' },
+            headers: {
+              Authorization: token || '',
+            },
           }
         )
+
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`)
+        }
+
         const data = await response.json()
         setResponse(data)
       }
@@ -494,7 +522,8 @@ export function QueryDatastreamsForm({ auth }: { auth: AuthProps }) {
                     </Alert>
                   )}
 
-                  {response.data.datastreams.length > 0 && (
+                  {response.data && response.data.datastreams.length >
+                    0 && (
                     <div className='space-y-4'>
                       {response.data.datastreams.map((stream) => (
                         <div
