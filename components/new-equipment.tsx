@@ -7,12 +7,9 @@ import { Label } from '@/components/ui/label'
 import { Separator } from '@/components/ui/separator'
 import { NewEquipmentForm } from './new-equipment-old' // Rename existing form
 import { NewEquipmentFormV2 } from './new-equipment-v2' // New version
+import { AuthProps } from '@/types/common'
 
-interface Props {
-  apiKey: string
-}
-
-export function NewEquipmentSelector({ apiKey }: Props) {
+export function NewEquipmentSelector({ auth }: { auth: AuthProps }) {
   const [version, setVersion] = useState<'v1' | 'v2'>('v2')
 
   return (
@@ -43,9 +40,9 @@ export function NewEquipmentSelector({ apiKey }: Props) {
           <Separator />
 
           {version === 'v1' ? (
-            <NewEquipmentForm apiKey={apiKey} />
+            <NewEquipmentForm apiKey={auth.apiKey} />
           ) : (
-            <NewEquipmentFormV2 apiKey={apiKey} />
+            <NewEquipmentFormV2 apiKey={auth.token} />
           )}
         </div>
       </CardContent>

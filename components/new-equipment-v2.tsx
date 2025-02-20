@@ -62,7 +62,7 @@ const initialFormData: NewEquipmentV2Request = {
 }
 
 interface Props {
-  apiKey: string
+  apiKey: string | undefined
 }
 
 export function NewEquipmentFormV2({ apiKey }: Props) {
@@ -98,7 +98,7 @@ export function NewEquipmentFormV2({ apiKey }: Props) {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
-            'api-key': apiKey,
+            ...(apiKey && { Authorization: apiKey }),
           },
           body: JSON.stringify(formData),
         }

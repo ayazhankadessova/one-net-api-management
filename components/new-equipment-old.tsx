@@ -27,7 +27,7 @@ const initialFormData: NewEquipmentRequest = {
 }
 
 interface Props {
-  apiKey: string
+  apiKey: string | undefined
 }
 
 export function NewEquipmentForm({ apiKey }: Props) {
@@ -94,7 +94,7 @@ export function NewEquipmentForm({ apiKey }: Props) {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'api-key': apiKey,
+          'api-key': apiKey || '',
         },
         body: JSON.stringify(requestData),
       })
