@@ -205,7 +205,7 @@ export default function Home() {
                   />
                 </div>
                 <div className='space-y-2'>
-                  <Label htmlFor='access-key'>Access Key</Label>
+                  <Label htmlFor='access-key'>User Access Key</Label>
                   <Input
                     id='access-key'
                     type='password'
